@@ -9,8 +9,9 @@
 
 from __future__ import annotations
 
-from functools import cache
 import re
+
+from functools import cache
 
 
 @cache

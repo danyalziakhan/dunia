@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
     from dunia.element import Node
 
+
 @dataclass(slots=True, frozen=True)
 class PlaywrightPage:
     page: playwright.Page

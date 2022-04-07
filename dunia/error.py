@@ -15,8 +15,9 @@ from typing import TYPE_CHECKING
 from colorama import Fore, init
 from playwright.async_api import Error, TimeoutError
 
-from dunia.log import warning
 from dunia.helpers import compile_regex
+from dunia.log import warning
+
 
 if TYPE_CHECKING:
     from typing import Any, Final

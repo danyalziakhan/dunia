@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Protocol
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+
 class StateSaver(Protocol):
     async def save(self) -> None:
         """Save the state class object to pickle file (for tracking which pages have been crawled)."""
