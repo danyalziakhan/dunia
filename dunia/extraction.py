@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import asyncio
+import os
 
+from contextlib import suppress
 from typing import TYPE_CHECKING, cast, overload
 
 import backoff
@@ -28,13 +30,13 @@ from dunia.error import (
     backoff_hdlr,
 )
 from dunia.lexbor import LexborDocument
-from dunia.log import warning
+from dunia.log import debug
 from dunia.lxml import LXMLDocument
 from dunia.modest import ModestDocument
 
 
 if TYPE_CHECKING:
-    from typing import Callable, Literal
+    from typing import Literal
 
     from dunia.browser import Browser
     from dunia.html import HTML
@@ -62,22 +64,6 @@ async def visit_link(
         raise TimeoutException(err) from err
 
 
-async def change_page(
-    page: Page,
-    page_no: int,
-    next_page_url: Callable[[str, int], str],
-) -> str:
-    """
-    Navigate to the next page according to the navigation strategy
-    """
-    category_url = next_page_url(page.url, page_no)
-    # ? We are starting from 1 because the first element (at index 0) is the current page that we don't want to navigate to again
-    if page_no != 1:
-        await visit_link(page, category_url)
-
-    return category_url
-
-
 async def load_html(
     html: HTML,
 ):
@@ -85,44 +71,29 @@ async def load_html(
     return await html.load() if await html.exists() else None
 
 
-async def load_from_html(
-    page: Page,
-    html: HTML,
-    wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-):
-
-    if not await html.exists():
-        return False
-
-    try:
-        await page.set_content(
-            await html.load(),
-            wait_until=wait_until,
-        )
-    except PlaywrightTimeoutError:
-        return False
-
-    return True
-
-
 async def load_content(
     *,
     browser: Browser,
     url: str,
     html: HTML,
-    page_throttle_rate_limit: int,
-    async_timeout: int,
-    save_html: bool,
+    page_throttle_rate_limit: int = 10,
+    async_timeout: int = 600,
+    save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ):
 
     if save_html:
         if await html.exists():
+            debug(f"Loading content from existing HTML: {html.file}")
             content = await html.load()
         else:
             try:
+                debug(f"Fetching content from URL: {url}")
                 content = await fetch_content(browser, url, page_throttle_rate_limit)
-            except UnicodeDecodeError:
+            except UnicodeDecodeError as err:
+                debug(
+                    f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
+                )
                 visit = with_timeout(async_timeout)(  # type: ignore
                     throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
                         visit_link
@@ -135,8 +106,12 @@ async def load_content(
             await html.save(content)
     else:
         try:
+            debug(f"Fetching content from URL: {url}")
             content = await fetch_content(browser, url, page_throttle_rate_limit)
-        except UnicodeDecodeError:
+        except UnicodeDecodeError as err:
+            debug(
+                f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
+            )
             visit = with_timeout(async_timeout)(  # type: ignore
                 throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
                     visit_link
@@ -155,15 +130,22 @@ async def reload_content(
     browser: Browser,
     url: str,
     html: HTML,
-    page_throttle_rate_limit: int,
-    async_timeout: int,
-    save_html: bool,
+    page_throttle_rate_limit: int = 10,
+    async_timeout: int = 600,
+    save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ):
+    if save_html:
+        with suppress(OSError):
+            os.remove(html.file)
 
     try:
+        debug(f"Fetching content from URL: {url}")
         content = await fetch_content(browser, url, page_throttle_rate_limit)
-    except UnicodeDecodeError:
+    except UnicodeDecodeError as err:
+        debug(
+            f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
+        )
         visit = with_timeout(async_timeout)(  # type: ignore
             throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
                 visit_link
@@ -203,16 +185,20 @@ async def load_page(
     browser: Browser,
     url: str,
     html: HTML,
-    page_throttle_rate_limit: int,
-    async_timeout: int,
-    save_html: bool,
+    page_throttle_rate_limit: int = 10,
+    async_timeout: int = 600,
+    save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ):
 
     if save_html:
         if await html.exists():
+            debug(f"Loading content from existing HTML: {html.file}")
             content = await html.load()
+            page = await browser.new_page()
+            await page.set_content(content, wait_until=wait_until)
         else:
+            debug(f"Visiting the URL ({url}) ...")
             visit = with_timeout(async_timeout)(  # type: ignore
                 throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
                     visit_link
@@ -222,9 +208,8 @@ async def load_page(
             await visit(page, url, wait_until=wait_until)
             content = await page.content()
             await html.save(content)
-
-            await page.close()
     else:
+        debug(f"Visiting the URL ({url}) ...")
         visit = with_timeout(async_timeout)(  # type: ignore
             throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
                 visit_link
@@ -232,11 +217,8 @@ async def load_page(
         )
         page = await browser.new_page()
         await visit(page, url, wait_until=wait_until)
-        content = await page.content()
 
-        await page.close()
-
-    return content
+    return page
 
 
 async def reload_page(
@@ -244,12 +226,16 @@ async def reload_page(
     browser: Browser,
     url: str,
     html: HTML,
-    page_throttle_rate_limit: int,
-    async_timeout: int,
-    save_html: bool,
+    page_throttle_rate_limit: int = 10,
+    async_timeout: int = 600,
+    save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ):
+    if save_html:
+        with suppress(OSError):
+            os.remove(html.file)
 
+    debug(f"Visiting the URL ({url}) ...")
     visit = with_timeout(async_timeout)(  # type: ignore
         throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
             visit_link
@@ -262,9 +248,7 @@ async def reload_page(
     if save_html:
         await html.save(content)
 
-    await page.close()
-
-    return content
+    return page
 
 
 @overload
@@ -329,9 +313,8 @@ async def parse_document(
 
 
 @overload
-async def parse_page(
+async def parse_document_from_url(
     browser: Browser,
-    content: str,
     url: str,
     *,
     page_throttle_rate_limit: int,
@@ -342,9 +325,8 @@ async def parse_page(
 
 
 @overload
-async def parse_page(
+async def parse_document_from_url(
     browser: Browser,
-    content: str,
     url: str,
     *,
     page_throttle_rate_limit: int,
@@ -355,9 +337,8 @@ async def parse_page(
 
 
 @overload
-async def parse_page(
+async def parse_document_from_url(
     browser: Browser,
-    content: str,
     url: str,
     *,
     page_throttle_rate_limit: int,
@@ -367,57 +348,46 @@ async def parse_page(
     ...
 
 
-async def parse_page(
+async def parse_document_from_url(
     browser: Browser,
-    content: str,
     url: str,
     *,
-    page_throttle_rate_limit: int,
-    async_timeout: int,
+    page_throttle_rate_limit: int = 10,
+    async_timeout: int = 600,
     engine: Literal["lxml", "modest", "lexbor"] = "lxml",
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ) -> LXMLDocument | ModestDocument | LexborDocument:
+
+    page = await browser.new_page()
+    visit = with_timeout(async_timeout)(  # type: ignore
+        throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
+            visit_link
+        )
+    )
+    await visit(page, url, wait_until=wait_until)
+    content = await page.content()
+    await page.close()
+
     if engine == "lxml":
         try:
-            tree = cast(lxml.HtmlElement, await asyncio.to_thread(lxml.fromstring, content))  # type: ignore
-        except lxml.etree.ParserError as err:
-            warning(
-                f'LXML parsing error -> "{err}". We will crawl the HTML content again.'
-            )
-
-            page = await browser.new_page()
-            visit = with_timeout(async_timeout)(  # type: ignore
-                throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
-                    visit_link
-                )
-            )
-            await visit(page, url, wait_until=wait_until)
-
             tree = cast(
                 lxml.HtmlElement,
-                await asyncio.to_thread(lxml.fromstring, await page.content()),  # type: ignore
+                await asyncio.to_thread(lxml.fromstring, content),  # type: ignore
             )
-            await page.close()
+        except lxml.etree.ParserError as err:
+            raise ValueError(
+                f'Could not parse LXML document due to an error -> "{err}"'
+            ) from err
+
         return LXMLDocument(tree)
 
     elif engine == "lexbor":
         try:
             tree = await asyncio.to_thread(LexborHTMLParser, content)
         except Exception as err:
-            warning(
-                f'Selectolax parsing error -> "{err}". We will crawl the HTML content again.'
-            )
-
-            page = await browser.new_page()
-            visit = with_timeout(async_timeout)(  # type: ignore
-                throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
-                    visit_link
-                )
-            )
-            await visit(page, url, wait_until=wait_until)
-
-            tree = await asyncio.to_thread(LexborHTMLParser, await page.content())
-            await page.close()
+            raise ValueError(
+                f'Could not parse LEXXBOR document due to an error -> "{err}"'
+            ) from err
 
         return LexborDocument(tree)
 
@@ -425,20 +395,9 @@ async def parse_page(
         try:
             tree = await asyncio.to_thread(HTMLParser, content)
         except Exception as err:
-            warning(
-                f'Selectolax parsing error -> "{err}". We will crawl the HTML content again.'
-            )
-
-            page = await browser.new_page()
-            visit = with_timeout(async_timeout)(  # type: ignore
-                throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
-                    visit_link
-                )
-            )
-            await visit(page, url, wait_until=wait_until)
-
-            tree = await asyncio.to_thread(HTMLParser, await page.content())
-            await page.close()
+            raise ValueError(
+                f'Could not parse MODEST document due to an error -> "{err}"'
+            ) from err
 
         return ModestDocument(tree)
 

@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-from random import choice
 from typing import TYPE_CHECKING
 
 from colorama import Fore, init
@@ -20,7 +19,7 @@ from dunia.log import warning
 
 
 if TYPE_CHECKING:
-    from typing import Any, Final
+    from typing import Final
 
 
 init()
@@ -45,43 +44,6 @@ class BasicError(Exception):
             if self.url
             else (Fore.RED + str(self.message) + Fore.RESET)
         )
-
-
-class DetailedError(Exception):
-    __slots__ = ("message",)
-    __match_args__: Final = ("message",)
-
-    def __init__(self, message: Exception | str, **kwargs: Any | None) -> None:
-        self.message = message
-
-        if kwargs:
-            error_msg = "".join(
-                (
-                    Fore.RED,
-                    str(self.message),
-                    Fore.RESET,
-                    "".join(
-                        f' {getattr(Fore, choice([s for s in Fore.__dict__.keys() if s not in ["RESET", "RED", "BLACK", "WHITE"]]))}|| {k} = {v}'
-                        for k, v in kwargs.items()
-                    ),
-                    " ||",
-                    Fore.RESET,
-                )
-            )
-
-        else:
-            error_msg = "".join(Fore.RED + str(self.message) + Fore.RESET)
-        super().__init__(error_msg)
-
-
-class QueryNotFound(DetailedError):
-    __slots__ = (
-        "description",
-        "query",
-    )
-
-    def __init__(self, description: Exception | str, query: str) -> None:
-        super().__init__(description, query=query)
 
 
 class LoginInputNotFound(BasicError):
