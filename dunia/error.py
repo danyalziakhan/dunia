@@ -66,6 +66,10 @@ class TimeoutException(BasicError):
     pass
 
 
+class HTMLParsingError(BasicError):
+    pass
+
+
 PlaywrightTimeoutError = TimeoutError
 PlaywrightError = Error
 

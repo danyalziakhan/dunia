@@ -24,6 +24,7 @@ from throttler import throttle
 
 from dunia.aio import with_timeout
 from dunia.error import (
+    HTMLParsingError,
     PlaywrightError,
     PlaywrightTimeoutError,
     TimeoutException,
@@ -307,7 +308,7 @@ async def parse_document(
 
         return ModestDocument(tree)
 
-    raise TypeError(
+    raise ValueError(
         f'Wrong engine type: {engine}\nSupported engines: ["lxml", "modest", "lexbor"]'
     )
 
@@ -375,7 +376,7 @@ async def parse_document_from_url(
                 await asyncio.to_thread(lxml.fromstring, content),  # type: ignore
             )
         except lxml.etree.ParserError as err:
-            raise ValueError(
+            raise HTMLParsingError(
                 f'Could not parse LXML document due to an error -> "{err}"'
             ) from err
 
@@ -385,7 +386,7 @@ async def parse_document_from_url(
         try:
             tree = await asyncio.to_thread(LexborHTMLParser, content)
         except Exception as err:
-            raise ValueError(
+            raise HTMLParsingError(
                 f'Could not parse LEXXBOR document due to an error -> "{err}"'
             ) from err
 
@@ -395,12 +396,12 @@ async def parse_document_from_url(
         try:
             tree = await asyncio.to_thread(HTMLParser, content)
         except Exception as err:
-            raise ValueError(
+            raise HTMLParsingError(
                 f'Could not parse MODEST document due to an error -> "{err}"'
             ) from err
 
         return ModestDocument(tree)
 
-    raise TypeError(
+    raise ValueError(
         f'Wrong engine type: {engine}\nSupported engines: ["lxml", "modest", "lexbor"]'
     )
