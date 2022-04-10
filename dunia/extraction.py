@@ -68,7 +68,9 @@ async def visit_link(
 async def load_html(
     html: HTML,
 ):
-
+    """
+    Utility function to load the html page with "None" type checking/narrowing
+    """
     return await html.load() if await html.exists() else None
 
 
@@ -82,7 +84,13 @@ async def load_content(
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ):
+    """
+    Load HTML content
 
+    Read from the file if it exists on disk, otherwise fetch it with Browser using HTTP's GET request
+
+    If the request fails, then visit the URL
+    """
     if save_html:
         if await html.exists():
             debug(f"Loading content from existing HTML: {html.file}")
@@ -136,6 +144,13 @@ async def reload_content(
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ):
+    """
+    Reload HTML content
+
+    Remove the file if it exists on disk and fetch it again with Browser using HTTP's GET request
+
+    If the request fails, then visit the URL
+    """
     if save_html:
         with suppress(OSError):
             os.remove(html.file)
@@ -170,6 +185,9 @@ async def reload_content(
     on_backoff=backoff_hdlr,
 )
 async def fetch_content(browser: Browser, url: str, rate_limit: int):
+    """
+    Using the Browser, send HTTP's GET request and receive the content response
+    """
     get = throttle(rate_limit=rate_limit, period=1.0)(  # type: ignore
         browser.request.get
     )
@@ -191,7 +209,11 @@ async def load_page(
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ):
+    """
+    Create a new page in the browser and visit the URL
 
+    Save the HTML content of page in the file on disk
+    """
     if save_html:
         if await html.exists():
             debug(f"Loading content from existing HTML: {html.file}")
@@ -232,6 +254,11 @@ async def reload_page(
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ):
+    """
+    Create a new page in the browser
+
+    If the file exists on disk, then remove it and visit the URL again
+    """
     if save_html:
         with suppress(OSError):
             os.remove(html.file)
@@ -284,6 +311,11 @@ async def parse_document(
     *,
     engine: Literal["lxml", "modest", "lexbor"] = "lxml",
 ) -> LXMLDocument | ModestDocument | LexborDocument | None:
+    """
+    Parse the HTML content using the specified parser ("lxml", "modest", "lexbor")
+
+    Return document object
+    """
     if engine == "lxml":
         try:
             tree = cast(lxml.HtmlElement, await asyncio.to_thread(lxml.fromstring, content))  # type: ignore
@@ -358,7 +390,11 @@ async def parse_document_from_url(
     engine: Literal["lxml", "modest", "lexbor"] = "lxml",
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ) -> LXMLDocument | ModestDocument | LexborDocument:
+    """
+    Visit the URL and parse the HTML content using the specified parser ("lxml", "modest", "lexbor")
 
+    Return document object if parsing is successful, however, unlike parse_document(), it raises an HTMLParsingError exception if parsing is failed
+    """
     page = await browser.new_page()
     visit = with_timeout(async_timeout)(  # type: ignore
         throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
