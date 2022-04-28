@@ -93,13 +93,14 @@ async def load_content(
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
+    strict: bool = False,
 ):
     """
     Load HTML content
 
     Read from the file if it exists on disk, otherwise fetch it with Browser using HTTP's GET request
 
-    If the request fails, then visit the URL
+    If the request fails and 'strict' is False, then visit the URL
     """
     if save_html:
         if await html.exists():
@@ -110,6 +111,9 @@ async def load_content(
                 debug(f"Fetching content from URL: {url}")
                 content = await fetch_content(browser, url, page_throttle_rate_limit)
             except UnicodeDecodeError as err:
+                if strict:
+                    raise err from err
+
                 debug(
                     f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
                 )
@@ -128,6 +132,9 @@ async def load_content(
             debug(f"Fetching content from URL: {url}")
             content = await fetch_content(browser, url, page_throttle_rate_limit)
         except UnicodeDecodeError as err:
+            if strict:
+                raise err from err
+
             debug(
                 f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
             )
@@ -153,13 +160,14 @@ async def reload_content(
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
+    strict: bool = False,
 ):
     """
     Reload HTML content
 
     Remove the file if it exists on disk and fetch it again with Browser using HTTP's GET request
 
-    If the request fails, then visit the URL
+    If the request fails and 'strict' is False, then visit the URL
     """
     if save_html:
         with suppress(OSError):
@@ -169,6 +177,9 @@ async def reload_content(
         debug(f"Fetching content from URL: {url}")
         content = await fetch_content(browser, url, page_throttle_rate_limit)
     except UnicodeDecodeError as err:
+        if strict:
+            raise err from err
+
         debug(
             f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
         )
@@ -201,12 +212,24 @@ async def fetch_content(browser: Browser, url: str, rate_limit: int):
     get = throttle(rate_limit=rate_limit, period=1.0)(  # type: ignore
         browser.request.get
     )
+
     try:
-        return cast(str, await (await get(url)).text())
+        body = cast(bytes, await (await get(url)).body())
     except (PlaywrightTimeoutError, PlaywrightError) as err:
         raise TimeoutException(err) from err
+
+    try:
+        return body.decode("utf-8-sig")
     except UnicodeDecodeError as err:
-        raise err from err
+        try:
+            return body.decode(
+                "utf-16",
+            )
+        except UnicodeDecodeError as err:
+            try:
+                return body.decode("cp1252")
+            except UnicodeDecodeError as err:
+                raise err from err
 
 
 async def load_page(
