@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dunia"
-version = "0.1.1"
+version = "0.1.2"
 description = "HTML parsing of JavaScript heavy websites using multiple backends (lxml, modest, playwright, etc.)."
 authors = ["Danyal Zia Khan <danyal6870@gmail.com>"]
 license = "MIT License"

@@ -25,7 +25,7 @@ from __future__ import annotations
 import asyncio
 import os
 from contextlib import suppress
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import backoff
 import lxml.html as lxml
@@ -206,31 +206,31 @@ async def fetch_content(browser: Browser, url: str, rate_limit: int) -> str:
     """
     Using the Browser, send HTTP's GET request and receive the content response
 
-    Will decode the response bytes using "utf-8", "utf-16" or "cp1252" encoding.
+    Will decode the response bytes using the encoding defined by 'charset'
+
+    If failed then "utf-8" encoding will be used
     """
     get = throttle(rate_limit=rate_limit, period=1.0)(  # type: ignore
         browser.request.get
     )
 
     try:
-        body = cast(bytes, await (await get(url)).body())
+        response: Any = await get(url)
     except (PlaywrightTimeoutError, PlaywrightError) as err:
         raise TimeoutException(err) from err
 
+    body = cast(bytes, await response.body())
+
     try:
-        return body.decode("utf-8-sig")
-    except UnicodeDecodeError as err:
-        # ? If default "utf-8" encoding fails, then try "utf-16"
+        encoding = response.headers["content-type"].split("charset=")[-1].strip()
+    except (KeyError, IndexError):
         try:
-            return body.decode(
-                "utf-16",
-            )
+            return body.decode("utf-8")
         except UnicodeDecodeError as err:
-            # ? And then try "cp1252"
-            try:
-                return body.decode("cp1252")
-            except UnicodeDecodeError as err:
-                raise err from err
+            raise err from err
+    else:
+        debug(f"Content encoding: {encoding}")
+        return body.decode(encoding)
 
 
 async def load_page(
