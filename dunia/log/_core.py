@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import os
 import sys
-
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loguru import logger
-
 
 if TYPE_CHECKING:
     from typing import Final
@@ -27,7 +25,7 @@ LOGGER_FORMAT_STR: Final[
 logger.add(
     sys.stderr,
     format=LOGGER_FORMAT_STR,
-    level="INFO",
+    level="DEBUG",
     colorize=True,
     enqueue=True,
 )
@@ -35,9 +33,6 @@ logger.add(
 PROCESS_ID: Final[int] = os.getpid()
 
 logger = logger.bind(id=PROCESS_ID).opt(colors=True)
-
-logger.remove()
-logger.add(sys.stderr, level="DEBUG", colorize=True, enqueue=True)
 
 logger.add(
     get_log_file(os.path.join(Path().absolute(), "logs")),
