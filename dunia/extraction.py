@@ -89,7 +89,7 @@ async def load_content(
     browser: Browser,
     url: str,
     html: HTML,
-    page_throttle_rate_limit: int = 10,
+    rate_limit: int = 10,
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
@@ -109,7 +109,7 @@ async def load_content(
         else:
             try:
                 debug(f"Fetching content from URL: {url}")
-                content = await fetch_content(browser, url, page_throttle_rate_limit)
+                content = await fetch_content(browser, url, rate_limit)
             except UnicodeDecodeError as err:
                 if strict:
                     raise err from err
@@ -118,7 +118,7 @@ async def load_content(
                     f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
                 )
                 visit = with_timeout(async_timeout)(  # type: ignore
-                    throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
+                    throttle(rate_limit=rate_limit, period=1.0)(  # type: ignore
                         visit_link
                     )
                 )
@@ -130,7 +130,7 @@ async def load_content(
     else:
         try:
             debug(f"Fetching content from URL: {url}")
-            content = await fetch_content(browser, url, page_throttle_rate_limit)
+            content = await fetch_content(browser, url, rate_limit)
         except UnicodeDecodeError as err:
             if strict:
                 raise err from err
@@ -139,9 +139,7 @@ async def load_content(
                 f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
             )
             visit = with_timeout(async_timeout)(  # type: ignore
-                throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
-                    visit_link
-                )
+                throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
             )
             page = await browser.new_page()
             await visit(page, url, wait_until=wait_until)
@@ -156,7 +154,7 @@ async def reload_content(
     browser: Browser,
     url: str,
     html: HTML,
-    page_throttle_rate_limit: int = 10,
+    rate_limit: int = 10,
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
@@ -175,7 +173,7 @@ async def reload_content(
 
     try:
         debug(f"Fetching content from URL: {url}")
-        content = await fetch_content(browser, url, page_throttle_rate_limit)
+        content = await fetch_content(browser, url, rate_limit)
     except UnicodeDecodeError as err:
         if strict:
             raise err from err
@@ -184,9 +182,7 @@ async def reload_content(
             f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
         )
         visit = with_timeout(async_timeout)(  # type: ignore
-            throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
-                visit_link
-            )
+            throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
         )
         page = await browser.new_page()
         await visit(page, url, wait_until=wait_until)
@@ -237,7 +233,7 @@ async def load_page(
     browser: Browser,
     url: str,
     html: HTML,
-    page_throttle_rate_limit: int = 10,
+    rate_limit: int = 10,
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
@@ -256,9 +252,7 @@ async def load_page(
         else:
             debug(f"Visiting the URL ({url}) ...")
             visit = with_timeout(async_timeout)(  # type: ignore
-                throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
-                    visit_link
-                )
+                throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
             )
             page = await browser.new_page()
             await visit(page, url, wait_until=wait_until)
@@ -267,9 +261,7 @@ async def load_page(
     else:
         debug(f"Visiting the URL ({url}) ...")
         visit = with_timeout(async_timeout)(  # type: ignore
-            throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
-                visit_link
-            )
+            throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
         )
         page = await browser.new_page()
         await visit(page, url, wait_until=wait_until)
@@ -282,7 +274,7 @@ async def reload_page(
     browser: Browser,
     url: str,
     html: HTML,
-    page_throttle_rate_limit: int = 10,
+    rate_limit: int = 10,
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
@@ -298,9 +290,7 @@ async def reload_page(
 
     debug(f"Visiting the URL ({url}) ...")
     visit = with_timeout(async_timeout)(  # type: ignore
-        throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
-            visit_link
-        )
+        throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
     )
     page = await browser.new_page()
     await visit(page, url, wait_until=wait_until)
@@ -383,7 +373,7 @@ async def parse_document_from_url(
     browser: Browser,
     url: str,
     *,
-    page_throttle_rate_limit: int,
+    rate_limit: int,
     async_timeout: int,
     engine: Literal["lxml"],
 ) -> LXMLDocument:
@@ -395,7 +385,7 @@ async def parse_document_from_url(
     browser: Browser,
     url: str,
     *,
-    page_throttle_rate_limit: int,
+    rate_limit: int,
     async_timeout: int,
     engine: Literal["modest"],
 ) -> ModestDocument:
@@ -407,7 +397,7 @@ async def parse_document_from_url(
     browser: Browser,
     url: str,
     *,
-    page_throttle_rate_limit: int,
+    rate_limit: int,
     async_timeout: int,
     engine: Literal["lexbor"],
 ) -> LexborDocument:
@@ -418,7 +408,7 @@ async def parse_document_from_url(
     browser: Browser,
     url: str,
     *,
-    page_throttle_rate_limit: int = 10,
+    rate_limit: int = 10,
     async_timeout: int = 600,
     engine: Literal["lxml", "modest", "lexbor"] = "lxml",
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
@@ -430,9 +420,7 @@ async def parse_document_from_url(
     """
     page = await browser.new_page()
     visit = with_timeout(async_timeout)(  # type: ignore
-        throttle(rate_limit=page_throttle_rate_limit, period=1.0)(  # type: ignore
-            visit_link
-        )
+        throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
     )
     await visit(page, url, wait_until=wait_until)
     content = await page.content()
