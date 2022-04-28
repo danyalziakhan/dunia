@@ -25,7 +25,7 @@ from __future__ import annotations
 import asyncio
 import os
 from contextlib import suppress
-from typing import TYPE_CHECKING, cast, overload
+from typing import TYPE_CHECKING, cast
 
 import backoff
 import lxml.html as lxml
@@ -45,6 +45,7 @@ from dunia.lexbor import LexborDocument
 from dunia.log import debug
 from dunia.lxml import LXMLDocument
 from dunia.modest import ModestDocument
+from dunia.page import Document
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -65,7 +66,7 @@ async def visit_link(
     page: Page,
     product_href: str,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-):
+) -> None:
     """
     Visit the page (url) and retry for 5 times if the navigation has been failed within the configured timeout
     """
@@ -77,7 +78,7 @@ async def visit_link(
 
 async def load_html(
     html: HTML,
-):
+) -> str | None:
     """
     Utility function to load the html page with "None" type checking/narrowing
     """
@@ -94,7 +95,7 @@ async def load_content(
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
     strict: bool = False,
-):
+) -> str:
     """
     Load HTML content
 
@@ -159,7 +160,7 @@ async def reload_content(
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
     strict: bool = False,
-):
+) -> str:
     """
     Reload HTML content
 
@@ -201,9 +202,11 @@ async def reload_content(
     max_tries=5,
     on_backoff=backoff_hdlr,
 )
-async def fetch_content(browser: Browser, url: str, rate_limit: int):
+async def fetch_content(browser: Browser, url: str, rate_limit: int) -> str:
     """
     Using the Browser, send HTTP's GET request and receive the content response
+
+    Will decode the response bytes using "utf-8", "utf-16" or "cp1252" encoding.
     """
     get = throttle(rate_limit=rate_limit, period=1.0)(  # type: ignore
         browser.request.get
@@ -217,11 +220,13 @@ async def fetch_content(browser: Browser, url: str, rate_limit: int):
     try:
         return body.decode("utf-8-sig")
     except UnicodeDecodeError as err:
+        # ? If default "utf-8" encoding fails, then try "utf-16"
         try:
             return body.decode(
                 "utf-16",
             )
         except UnicodeDecodeError as err:
+            # ? And then try "cp1252"
             try:
                 return body.decode("cp1252")
             except UnicodeDecodeError as err:
@@ -237,7 +242,7 @@ async def load_page(
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-):
+) -> Page:
     """
     Create a new page in the browser and visit the URL
 
@@ -278,7 +283,7 @@ async def reload_page(
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-):
+) -> Page:
     """
     Create a new page in the browser
 
@@ -302,38 +307,11 @@ async def reload_page(
     return page
 
 
-@overload
-async def parse_document(
-    content: str,
-    *,
-    engine: Literal["lxml"],
-) -> LXMLDocument | None:
-    ...
-
-
-@overload
-async def parse_document(
-    content: str,
-    *,
-    engine: Literal["modest"],
-) -> ModestDocument | None:
-    ...
-
-
-@overload
-async def parse_document(
-    content: str,
-    *,
-    engine: Literal["lexbor"],
-) -> LexborDocument | None:
-    ...
-
-
 async def parse_document(
     content: str,
     *,
     engine: Literal["lxml", "modest", "lexbor"] = "lxml",
-) -> LXMLDocument | ModestDocument | LexborDocument | None:
+) -> Document | None:
     """
     Parse the HTML content using the specified parser ("lxml", "modest", "lexbor")
 
@@ -368,42 +346,6 @@ async def parse_document(
     )
 
 
-@overload
-async def parse_document_from_url(
-    browser: Browser,
-    url: str,
-    *,
-    rate_limit: int,
-    async_timeout: int,
-    engine: Literal["lxml"],
-) -> LXMLDocument:
-    ...
-
-
-@overload
-async def parse_document_from_url(
-    browser: Browser,
-    url: str,
-    *,
-    rate_limit: int,
-    async_timeout: int,
-    engine: Literal["modest"],
-) -> ModestDocument:
-    ...
-
-
-@overload
-async def parse_document_from_url(
-    browser: Browser,
-    url: str,
-    *,
-    rate_limit: int,
-    async_timeout: int,
-    engine: Literal["lexbor"],
-) -> LexborDocument:
-    ...
-
-
 async def parse_document_from_url(
     browser: Browser,
     url: str,
@@ -412,7 +354,7 @@ async def parse_document_from_url(
     async_timeout: int = 600,
     engine: Literal["lxml", "modest", "lexbor"] = "lxml",
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-) -> LXMLDocument | ModestDocument | LexborDocument:
+) -> Document:
     """
     Visit the URL and parse the HTML content using the specified parser ("lxml", "modest", "lexbor")
 
