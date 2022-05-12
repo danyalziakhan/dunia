@@ -25,10 +25,12 @@ from __future__ import annotations
 import asyncio
 import os
 from contextlib import suppress
+from functools import cache
 from typing import TYPE_CHECKING, Any, cast
 
 import backoff
 import lxml.html as lxml
+from charset_normalizer import detect
 from selectolax.lexbor import LexborHTMLParser
 from selectolax.parser import HTMLParser
 from throttler import throttle
@@ -202,13 +204,15 @@ async def reload_content(
     max_tries=5,
     on_backoff=backoff_hdlr,
 )
-async def fetch_content(browser: Browser, url: str, rate_limit: int) -> str:
+async def fetch_content(
+    browser: Browser, url: str, rate_limit: int, encoding: str | None = None
+) -> str:
     """
-    Using the Browser, send HTTP's GET request and receive the content response
+    Use the Browser to send HTTP's GET request and receive the content response
 
-    Will decode the response bytes using the encoding defined by 'charset'
+    If encoding is not provided, then it will try to find the encoding from content body
 
-    If failed then "utf-8" encoding will be used
+    If it fails, then encoding will be detected using `charset_normalizer`
     """
     get = throttle(rate_limit=rate_limit, period=1.0)(  # type: ignore
         browser.request.get
@@ -221,16 +225,38 @@ async def fetch_content(browser: Browser, url: str, rate_limit: int) -> str:
 
     body = cast(bytes, await response.body())
 
-    try:
-        encoding = response.headers["content-type"].split("charset=")[-1].strip()
-    except (KeyError, IndexError):
-        try:
-            return body.decode("utf-8")
-        except UnicodeDecodeError as err:
-            raise err from err
-    else:
-        debug(f"Content encoding: {encoding}")
+    if encoding:
         return body.decode(encoding)
+
+    try:
+        content_type = response.headers["content-type"]
+    except KeyError:
+        detected_encoding = await detect_encoding(body)
+        debug(f"Detected encoding: {detected_encoding}")
+
+        return body.decode(detected_encoding)
+    else:
+        debug(f"Content-Type: {content_type}")
+
+        if "charset=" in content_type:
+            content_encoding = content_type.split("charset=")[-1].strip()
+            debug(f"Content encoding: {content_encoding}")
+
+            return body.decode(content_encoding)
+        else:
+            detected_encoding = await detect_encoding(body)
+            debug(f"Detected encoding: {detected_encoding}")
+
+            return body.decode(detected_encoding)
+
+
+@cache
+async def detect_encoding(content: bytes) -> str:
+    """
+    Find the most probable encoding of the content
+    """
+    encoding = await asyncio.to_thread(detect, content)
+    return encoding["encoding"]  # type: ignore
 
 
 async def load_page(
