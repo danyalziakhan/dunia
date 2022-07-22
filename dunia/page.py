@@ -184,6 +184,11 @@ class Page(
     ) -> AsyncEventContextManager[None]:
         ...
 
+    def expect_request_finished(
+        self, *, timeout: int | None = None
+    ) -> AsyncEventContextManager[None]:
+        ...
+
     def expect_download(
         self, *, timeout: int | None = None
     ) -> AsyncEventContextManager[Download]:

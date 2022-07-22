@@ -30,17 +30,8 @@ from async_timeout import timeout as async_timeout
 
 if TYPE_CHECKING:
     from asyncio import Future
-    from typing import (
-        Any,
-        Awaitable,
-        Callable,
-        Coroutine,
-        Generator,
-        Literal,
-        ParamSpec,
-        TypeVar,
-        overload,
-    )
+    from collections.abc import Awaitable, Callable, Coroutine, Generator
+    from typing import Any, Literal, ParamSpec, TypeVar, overload
 
     ParamsType = ParamSpec("ParamsType")
     ReturnType = TypeVar("ReturnType")

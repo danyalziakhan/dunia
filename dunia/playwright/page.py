@@ -217,6 +217,14 @@ class PlaywrightPage:
             self.page.expect_navigation(timeout=timeout),  # type: ignore
         )
 
+    def expect_request_finished(
+        self, *, timeout: float | None = None
+    ) -> AsyncEventContextManager[None]:
+        return cast(
+            AsyncEventContextManager[None],
+            self.page.expect_request_finished(timeout=timeout),  # type: ignore
+        )
+
     def expect_download(
         self, *, timeout: float | None = None
     ) -> AsyncEventContextManager[Download]:

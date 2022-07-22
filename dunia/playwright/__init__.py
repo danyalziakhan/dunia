@@ -6,7 +6,6 @@ from dunia.playwright.browser import (
 )
 from dunia.playwright.page import PlaywrightElementHandle, PlaywrightPage
 
-
 __all__ = [
     "PlaywrightBrowser",
     "PlaywrightPersistentBrowser",
