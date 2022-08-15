@@ -37,66 +37,57 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True)
 class LexborDocument:
-    html_element: LexborHTMLParser
+    handle: LexborHTMLParser
 
     async def query_selector(self, selector: str) -> Element | None:
-        if html_element := await css_first(self.html_element, selector):
-            return LexborElement(html_element)  # type: ignore
+        if handle := await css_first(self.handle, selector):
+            return LexborElement(handle)  # type: ignore
 
         return None
 
     async def query_selector_all(self, selector: str) -> list[Element]:
-        return [
-            LexborElement(html_element)
-            for html_element in await css(self.html_element, selector)
-        ]
+        return [LexborElement(handle) for handle in await css(self.handle, selector)]
 
     async def text_content(
         self, selector: str, *, timeout: int | None = None
     ) -> str | None:
-        if html_element := await css_first(self.html_element, selector):
-            return html_element.text(deep=True)  # type: ignore
+        if handle := await css_first(self.handle, selector):
+            return handle.text(deep=True)  # type: ignore
 
         return None
 
     async def inner_text(
         self, selector: str, *, timeout: int | None = None
     ) -> str | None:
-        if html_element := await css_first(self.html_element, selector):
-            return html_element.text(deep=False)  # type: ignore
+        if handle := await css_first(self.handle, selector):
+            return handle.text(deep=False)  # type: ignore
 
         return None
 
     async def get_attribute(
         self, selector: str, name: str, *, timeout: int | None = None
     ) -> str | None:
-        if html_element := await css_first(self.html_element, selector):
-            return html_element.attrs.sget(name, None)  # type: ignore
+        if handle := await css_first(self.handle, selector):
+            return handle.attrs.sget(name, None)  # type: ignore
 
         return None
 
 
 @dataclass(slots=True, frozen=True)
 class LexborElement:
-    html_element: LexborNode
+    handle: LexborNode
 
     async def query_selector(self, selector: str) -> Self | None:
-        if html_element := await css_first(self.html_element, selector):
-            return LexborElement(html_element)  # type: ignore
+        if handle := await css_first(self.handle, selector):
+            return LexborElement(handle)  # type: ignore
 
         return None
 
     async def query_selector_all(self, selector: str) -> list[Self]:
-        return [
-            LexborElement(html_element)
-            for html_element in await css(self.html_element, selector)
-        ]
+        return [LexborElement(handle) for handle in await css(self.handle, selector)]
 
     async def text_content(self) -> str | None:
-        if text := await asyncio.to_thread(self.html_element.text):
-            return text
-
-        return None
+        return text if (text := await asyncio.to_thread(self.handle.text)) else None
 
     async def get_attribute(self, name: str) -> str | None:
-        return self.html_element.attrs.sget(name, default=None)
+        return self.handle.attrs.sget(name, default=None)

@@ -37,61 +37,51 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True)
 class LXMLDocument:
-    html_element: lxml.HtmlElement
+    handle: lxml.HtmlElement
 
     async def query_selector(self, selector: str) -> Element | None:
-        html_elements = await asyncio.to_thread(cssselect, self.html_element, selector)
-        if len(html_elements):
-            return LXMLElement(html_elements[0])
-
-        return None
+        handles = await asyncio.to_thread(cssselect, self.handle, selector)
+        return LXMLElement(handles[0]) if len(handles) else None
 
     async def query_selector_all(self, selector: str) -> list[Element]:
         return [
-            LXMLElement(html_element)
-            for html_element in await asyncio.to_thread(
-                cssselect, self.html_element, selector
-            )
+            LXMLElement(handle)
+            for handle in await asyncio.to_thread(cssselect, self.handle, selector)
         ]
 
     async def text_content(
         self, selector: str, timeout: int | None = None
     ) -> str | None:
-        return await asyncio.to_thread(text_content, self.html_element, selector)
+        return await asyncio.to_thread(text_content, self.handle, selector)
 
     async def inner_text(self, selector: str, timeout: int | None = None) -> str | None:
-        return await asyncio.to_thread(inner_text, self.html_element, selector)
+        return await asyncio.to_thread(inner_text, self.handle, selector)
 
     async def get_attribute(
         self, selector: str, name: str, timeout: int | None = None
     ) -> str | None:
-        return await asyncio.to_thread(get_attribute, self.html_element, selector, name)
+        return await asyncio.to_thread(get_attribute, self.handle, selector, name)
 
 
 @dataclass(slots=True, frozen=True)
 class LXMLElement:
-    html_element: lxml.HtmlElement
+    handle: lxml.HtmlElement
 
     async def query_selector(self, selector: str) -> Self | None:
-        html_elements = await asyncio.to_thread(cssselect, self.html_element, selector)
-        if len(html_elements):
-            return LXMLElement(html_elements[0])
-
-        return None
+        handles = await asyncio.to_thread(cssselect, self.handle, selector)
+        return LXMLElement(handles[0]) if len(handles) else None
 
     async def query_selector_all(self, selector: str) -> list[Self]:
         return [
-            LXMLElement(html_element)
-            for html_element in await asyncio.to_thread(
-                cssselect, self.html_element, selector
-            )
+            LXMLElement(handle)
+            for handle in await asyncio.to_thread(cssselect, self.handle, selector)
         ]
 
     async def text_content(self) -> str | None:
-        if text := await asyncio.to_thread(self.html_element.text_content):
+        if text := await asyncio.to_thread(self.handle.text_content):
             return text
 
         return None
 
     async def get_attribute(self, name: str) -> str | None:
-        return self.html_element.get(name, default=None)
+        return self.handle.get(name, default=None)

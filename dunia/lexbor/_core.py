@@ -32,14 +32,14 @@ if TYPE_CHECKING:
 async def css_first(document_or_node: LexborHTMLParser | LexborNode, selector: str):
     if (splitter := ",") in selector or (splitter := ", ") in selector:
         for selector in selector.split(splitter):
-            if html_element := await asyncio.to_thread(
+            if handle := await asyncio.to_thread(
                 document_or_node.css_first, selector, default=None  # type: ignore
             ):
-                return html_element
-    elif html_element := await asyncio.to_thread(
+                return handle
+    elif handle := await asyncio.to_thread(
         document_or_node.css_first, selector, default=None  # type: ignore
     ):
-        return html_element
+        return handle
 
 
 async def css(document_or_node: LexborHTMLParser | LexborNode, selector: str):
@@ -49,8 +49,6 @@ async def css(document_or_node: LexborHTMLParser | LexborNode, selector: str):
             for selector in selector.split(splitter)
         )
         all_css = await asyncio.gather(*tasks)
-        return [
-            html_element for html_elements in all_css for html_element in html_elements
-        ]
+        return [handle for handles in all_css for handle in handles]
 
     return await asyncio.to_thread(document_or_node.css, selector)

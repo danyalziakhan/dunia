@@ -53,24 +53,15 @@ def cssselect(tree: lxml.HtmlElement, selector: str) -> list[lxml.HtmlElement]:
 
 
 def text_content(tree: lxml.HtmlElement, selector: str) -> str | None:
-    html_elements = cssselect(tree, selector)
-    if len(html_elements):
-        return html_elements[0].text_content()
-
-    return None
+    handles = cssselect(tree, selector)
+    return handles[0].text_content() if len(handles) else None
 
 
 def inner_text(tree: lxml.HtmlElement, selector: str) -> str | None:
-    html_elements = cssselect(tree, selector)
-    if len(html_elements):
-        return html_elements[0].text
-
-    return None
+    handles = cssselect(tree, selector)
+    return handles[0].text if len(handles) else None
 
 
 def get_attribute(tree: lxml.HtmlElement, selector: str, name: str) -> str | None:
-    html_elements = cssselect(tree, selector)
-    if len(html_elements):
-        return html_elements[0].get(name, None)
-
-    return None
+    handles = cssselect(tree, selector)
+    return handles[0].get(name, None) if len(handles) else None

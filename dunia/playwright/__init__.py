@@ -4,7 +4,7 @@ from dunia.playwright.browser import (
     PlaywrightBrowserWithoutLogin,
     PlaywrightPersistentBrowser,
 )
-from dunia.playwright.page import PlaywrightElementHandle, PlaywrightPage
+from dunia.playwright.page import PlaywrightElement, PlaywrightPage
 
 __all__ = [
     "PlaywrightBrowser",
@@ -12,5 +12,5 @@ __all__ = [
     "PlaywrightBrowserWithLogin",
     "PlaywrightBrowserWithoutLogin",
     "PlaywrightPage",
-    "PlaywrightElementHandle",
+    "PlaywrightElement",
 ]
