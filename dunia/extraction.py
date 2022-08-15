@@ -25,11 +25,11 @@ from __future__ import annotations
 import asyncio
 import os
 from contextlib import suppress
-from functools import cache
 from typing import TYPE_CHECKING, Any, cast
 
 import backoff
 import lxml.html as lxml
+from async_lru import alru_cache  # type: ignore
 from charset_normalizer import detect
 from selectolax.lexbor import LexborHTMLParser
 from selectolax.parser import HTMLParser
@@ -62,7 +62,7 @@ if TYPE_CHECKING:
     backoff.expo,
     TimeoutException,
     max_tries=5,
-    on_backoff=backoff_hdlr,
+    on_backoff=backoff_hdlr,  # type: ignore
 )
 async def visit_link(
     page: Page,
@@ -202,7 +202,7 @@ async def reload_content(
     backoff.expo,
     TimeoutException,
     max_tries=5,
-    on_backoff=backoff_hdlr,
+    on_backoff=backoff_hdlr,  # type: ignore
 )
 async def fetch_content(
     browser: Browser, url: str, rate_limit: int, encoding: str | None = None
@@ -250,7 +250,7 @@ async def fetch_content(
             return body.decode(detected_encoding)
 
 
-@cache
+@alru_cache
 async def detect_encoding(content: bytes) -> str:
     """
     Find the most probable encoding of the content

@@ -15,18 +15,19 @@ description = "HTML parsing of JavaScript heavy websites using multiple backends
 license = "MIT License"
 name = "dunia"
 readme = "README.md"
-version = "0.1.4"
+version = "0.1.5"
 
 [tool.poetry.dependencies]
+async-lru = "^1.0.3"
 async-timeout = "^4.0.2"
 backoff = "^2.1.2"
 charset-normalizer = "^2.1.0"
 cssselect = "^1.1.0"
 loguru = "^0.6.0"
 lxml = "^4.9.1"
-playwright = "^1.23.1"
+playwright = "^1.24.1"
 python = ">=3.10,<3.11"
-selectolax = "^0.3.7"
+selectolax = "^0.3.8"
 throttler = "^1.2.1"
 
 [tool.poetry.group.dev.dependencies]

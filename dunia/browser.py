@@ -116,6 +116,7 @@ class BrowserConfig:
         metadata={"help": "Whether to use Chromium or Firefox browser"},
     )
     channel: Literal[
+        "",
         "chrome",
         "chrome-beta",
         "chrome-dev",
@@ -125,8 +126,10 @@ class BrowserConfig:
         "msedge-dev",
         "msedge-canary",
     ] = field(
-        default="chrome",
-        metadata={"help": "Channel to download browser from"},
+        default="",
+        metadata={
+            "help": "Channel to download the browser from. If no value is provided, it will use default browser which needs to be downloaded during Playwright installation"
+        },
     )
     locale: str = field(
         default="ko-KR",
