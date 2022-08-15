@@ -31,7 +31,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypedDict, TypeVar
 
 from dunia.page import Page
 
@@ -47,7 +47,6 @@ SCRIPT_PATH: Final[Path] = Path().absolute()
 CACHE_DIR: Final[str] = os.path.join(SCRIPT_PATH, "cache")
 
 PageType = TypeVar("PageType", covariant=True)
-BrowserContextType = TypeVar("BrowserContextType", covariant=True)
 
 
 class ViewportSize(TypedDict):
@@ -154,16 +153,7 @@ class BrowserRequestHandle(Protocol):
         ...
 
 
-class BrowserContext(Protocol[BrowserContextType]):
-    @property
-    def context(self) -> Any:
-        """Current instance of the browser context"""
-        ...
-
-
-class Browser(
-    BrowserPageSpawner[Page], BrowserRequestHandle, BrowserContext[Any], Protocol
-):
+class Browser(BrowserPageSpawner[Page], BrowserRequestHandle, Protocol):
     pass
 
 

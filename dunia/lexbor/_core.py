@@ -33,11 +33,11 @@ async def css_first(document_or_node: LexborHTMLParser | LexborNode, selector: s
     if (splitter := ",") in selector or (splitter := ", ") in selector:
         for selector in selector.split(splitter):
             if html_element := await asyncio.to_thread(
-                document_or_node.css_first, selector, default=None
+                document_or_node.css_first, selector, default=None  # type: ignore
             ):
                 return html_element
     elif html_element := await asyncio.to_thread(
-        document_or_node.css_first, selector, default=None
+        document_or_node.css_first, selector, default=None  # type: ignore
     ):
         return html_element
 
