@@ -34,6 +34,8 @@ from dunia.login import Login
 from dunia.playwright.page import PlaywrightPage
 from dunia.request import Request
 
+from ..page import Page
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -42,11 +44,15 @@ if TYPE_CHECKING:
 
 
 class PlaywrightBrowser(Browser, Protocol):
-    async def new_page(self) -> PlaywrightPage:
+    async def new_page(self) -> Page:
         ...
 
     @property
     def context(self) -> playwright.BrowserContext:
+        ...
+
+    @property
+    def pages(self) -> list[Page]:
         ...
 
 
@@ -80,7 +86,7 @@ class PlaywrightBrowserWithLogin(PlaywrightPersistentBrowser):
         return self
 
     # ? We only need new_page() from playwright's BrowserContext to make this class API compatible with all the existing markets because we can then simply use PlaywrightBrowser instead of playwright's BrowserContext
-    async def new_page(self) -> PlaywrightPage:
+    async def new_page(self) -> Page:
         if not self.__browser_context:
             raise BrowserNotInitialized("Please call login() first")
 
@@ -96,6 +102,10 @@ class PlaywrightBrowserWithLogin(PlaywrightPersistentBrowser):
     @property
     def request(self) -> Request:
         return cast(Request, self.context.request)
+
+    @property
+    def pages(self) -> list[Page]:
+        return [PlaywrightPage(page) for page in self.context.pages]
 
 
 @dataclass(slots=True, kw_only=True)
@@ -115,7 +125,7 @@ class PlaywrightBrowserWithoutLogin(PlaywrightPersistentBrowser):
         return self
 
     # ? We only need new_page() from playwright's BrowserContext to make this class API compatible with all the existing markets because we can then simply use PlaywrightBrowser instead of playwright's BrowserContext
-    async def new_page(self) -> PlaywrightPage:
+    async def new_page(self) -> Page:
         if not self.__browser_context:
             raise BrowserNotInitialized("Please call create() first")
 
@@ -131,6 +141,10 @@ class PlaywrightBrowserWithoutLogin(PlaywrightPersistentBrowser):
     @property
     def request(self) -> Request:
         return cast(Request, self.context.request)
+
+    @property
+    def pages(self) -> list[Page]:
+        return [PlaywrightPage(page) for page in self.context.pages]
 
 
 async def create_playwright_persistent_browser(
@@ -190,10 +204,11 @@ async def close_first_blank_page(browser: PlaywrightBrowser):
         await browser.context.pages[0].close()
 
 
-async def main_page_only(browser: PlaywrightBrowser) -> PlaywrightPage:
+async def main_page_only(browser: PlaywrightBrowser) -> Page:
     new_page = await browser.new_page()
     all_pages = browser.context.pages
     if len(all_pages) > 1:
         for page in all_pages[:-1]:
             await page.close()
+
     return new_page

@@ -31,7 +31,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Protocol, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypedDict
 
 from dunia.page import Page
 
@@ -45,8 +45,6 @@ if TYPE_CHECKING:
 
 SCRIPT_PATH: Final[Path] = Path().absolute()
 CACHE_DIR: Final[str] = os.path.join(SCRIPT_PATH, "cache")
-
-PageType = TypeVar("PageType", covariant=True)
 
 
 class ViewportSize(TypedDict):
@@ -140,21 +138,19 @@ class BrowserConfig:
     )
 
 
-class BrowserPageSpawner(Protocol[PageType]):
-    async def new_page(self) -> PageType:
+class Browser(Protocol):
+    async def new_page(self) -> Page:
         """This is present here so that new_page() for its sub-classes will work regardless of the type of Browser"""
         ...
 
+    @property
+    def pages(self) -> list[Page]:
+        ...
 
-class BrowserRequestHandle(Protocol):
     @property
     def request(self) -> Request:
         """Returns the Request object for HTTP methods"""
         ...
-
-
-class Browser(BrowserPageSpawner[Page], BrowserRequestHandle, Protocol):
-    pass
 
 
 class BrowserWithLogin(Browser, Protocol):
