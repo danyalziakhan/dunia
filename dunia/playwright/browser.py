@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 
 
 class PlaywrightBrowser(Browser, Protocol):
-    async def new_page(self) -> Page:
+    async def new_page(self) -> PlaywrightPage:
         ...
 
     @property
@@ -185,6 +185,8 @@ async def create_playwright_persistent_browser(
 
     if persistent_browser.browser_config.proxy:
         browser_args["proxy"] = persistent_browser.browser_config.proxy
+
+    browser_args["ignore_https_errors"] = True
 
     if persistent_browser.browser_config.browser == "chromium":
         browser = await persistent_browser.playwright.chromium.launch_persistent_context(**browser_args)  # type: ignore
