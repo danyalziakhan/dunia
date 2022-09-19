@@ -8,6 +8,7 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
@@ -21,19 +22,19 @@ version = "0.1.5"
 async-lru = "^1.0.3"
 async-timeout = "^4.0.2"
 backoff = "^2.1.2"
-charset-normalizer = "^2.1.0"
+charset-normalizer = "^2.1.1"
 cssselect = "^1.1.0"
 loguru = "^0.6.0"
 lxml = "^4.9.1"
-playwright = "^1.24.1"
-python = ">=3.10,<3.11"
+playwright = "^1.25.2"
+python = ">=3.10,<3.12"
 selectolax = "^0.3.8"
 throttler = "^1.2.1"
 
 [tool.poetry.group.dev.dependencies]
-black = "^22.6.0"
-ipykernel = "^6.15.1"
-ipython = "^8.4.0"
+black = "^22.8.0"
+ipykernel = "^6.15.3"
+ipython = "^8.5.0"
 isort = "^5.10.1"
 pre-commit = "^2.20.0"
 
