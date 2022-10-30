@@ -20,7 +20,7 @@ repos:
       - id: trailing-whitespace
       - id: detect-private-key
       - id: fix-byte-order-marker
-      - id: check-added-large-files
+      # - id: check-added-large-files
       - id: name-tests-test
         args: ["--django"]
   - repo: https://github.com/psf/black
