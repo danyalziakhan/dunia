@@ -23,13 +23,14 @@ python = ">=3.10,<3.12"
 async-lru = "^1.0.3"
 async-timeout = "^4.0.2"
 backoff = "^2.2.1"
-charset-normalizer = "^3.0.0"
+charset-normalizer = ">=2.0,<3.0"
 cssselect = "^1.2.0"
 loguru = "^0.6.0"
-lxml = {path = "lxml-4.9.0-cp311-cp311-win_amd64.whl"}
 playwright = "^1.27.1"
 selectolax = "^0.3.11"
 throttler = "^1.2.1"
+# See: https://stackoverflow.com/questions/72346789/poetry-first-added-library-version-higher-than-allowed-by-project-python-versio
+lxml = [{ version = "^4.9.1", python = "<3.11" }, { url = "https://download.lfd.uci.edu/pythonlibs/archived/lxml-4.9.0-cp311-cp311-win_amd64.whl", python = "^3.11" }]
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
