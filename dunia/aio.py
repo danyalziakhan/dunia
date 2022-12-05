@@ -46,6 +46,8 @@ if TYPE_CHECKING:
     _T7 = TypeVar("_T7")
     _T8 = TypeVar("_T8")
     _T9 = TypeVar("_T9")
+    _T10 = TypeVar("_T10")
+    _T11 = TypeVar("_T11")
     _FutureT = Future[_T] | Generator[Any, None, _T] | Awaitable[_T]
 
     # ? Typing for asyncio.gather() for upto 8 coroutines
@@ -157,6 +159,41 @@ if TYPE_CHECKING:
         ...
 
     @overload
+    def gather(  # type: ignore
+        __coro_or_future1: _FutureT[_T1],
+        __coro_or_future2: _FutureT[_T2],
+        __coro_or_future3: _FutureT[_T3],
+        __coro_or_future4: _FutureT[_T4],
+        __coro_or_future5: _FutureT[_T5],
+        __coro_or_future6: _FutureT[_T6],
+        __coro_or_future7: _FutureT[_T7],
+        __coro_or_future8: _FutureT[_T8],
+        __coro_or_future9: _FutureT[_T9],
+        __coro_or_future10: _FutureT[_T10],
+        *,
+        return_exceptions: Literal[False] = ...,
+    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10]]:
+        ...
+
+    @overload
+    def gather(  # type: ignore
+        __coro_or_future1: _FutureT[_T1],
+        __coro_or_future2: _FutureT[_T2],
+        __coro_or_future3: _FutureT[_T3],
+        __coro_or_future4: _FutureT[_T4],
+        __coro_or_future5: _FutureT[_T5],
+        __coro_or_future6: _FutureT[_T6],
+        __coro_or_future7: _FutureT[_T7],
+        __coro_or_future8: _FutureT[_T8],
+        __coro_or_future9: _FutureT[_T9],
+        __coro_or_future10: _FutureT[_T10],
+        __coro_or_future11: _FutureT[_T11],
+        *,
+        return_exceptions: Literal[False] = ...,
+    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11]]:
+        ...
+
+    @overload
     def gather(
         __coro_or_future1: _FutureT[Any],
         __coro_or_future2: _FutureT[Any],
@@ -168,6 +205,8 @@ if TYPE_CHECKING:
         __coro_or_future8: _FutureT[Any],
         __coro_or_future9: _FutureT[Any],
         __coro_or_future10: _FutureT[Any],
+        __coro_or_future11: _FutureT[Any],
+        __coro_or_future12: _FutureT[Any],
         *coros_or_futures: _FutureT[Any],
         return_exceptions: bool = ...,
     ) -> Future[list[Any]]:
@@ -332,6 +371,68 @@ if TYPE_CHECKING:
             _T7 | BaseException,
             _T8 | BaseException,
             _T9 | BaseException,
+        ]
+    ]:
+        ...
+
+    @overload
+    def gather(
+        __coro_or_future1: _FutureT[_T1],
+        __coro_or_future2: _FutureT[_T2],
+        __coro_or_future3: _FutureT[_T3],
+        __coro_or_future4: _FutureT[_T4],
+        __coro_or_future5: _FutureT[_T5],
+        __coro_or_future6: _FutureT[_T6],
+        __coro_or_future7: _FutureT[_T7],
+        __coro_or_future8: _FutureT[_T8],
+        __coro_or_future9: _FutureT[_T9],
+        __coro_or_future10: _FutureT[_T10],
+        *,
+        return_exceptions: bool = ...,
+    ) -> Future[
+        tuple[
+            _T1 | BaseException,
+            _T2 | BaseException,
+            _T3 | BaseException,
+            _T4 | BaseException,
+            _T5 | BaseException,
+            _T6 | BaseException,
+            _T7 | BaseException,
+            _T8 | BaseException,
+            _T9 | BaseException,
+            _T10 | BaseException,
+        ]
+    ]:
+        ...
+
+    @overload
+    def gather(
+        __coro_or_future1: _FutureT[_T1],
+        __coro_or_future2: _FutureT[_T2],
+        __coro_or_future3: _FutureT[_T3],
+        __coro_or_future4: _FutureT[_T4],
+        __coro_or_future5: _FutureT[_T5],
+        __coro_or_future6: _FutureT[_T6],
+        __coro_or_future7: _FutureT[_T7],
+        __coro_or_future8: _FutureT[_T8],
+        __coro_or_future9: _FutureT[_T9],
+        __coro_or_future10: _FutureT[_T10],
+        __coro_or_future11: _FutureT[_T11],
+        *,
+        return_exceptions: bool = ...,
+    ) -> Future[
+        tuple[
+            _T1 | BaseException,
+            _T2 | BaseException,
+            _T3 | BaseException,
+            _T4 | BaseException,
+            _T5 | BaseException,
+            _T6 | BaseException,
+            _T7 | BaseException,
+            _T8 | BaseException,
+            _T9 | BaseException,
+            _T10 | BaseException,
+            _T11 | BaseException,
         ]
     ]:
         ...
