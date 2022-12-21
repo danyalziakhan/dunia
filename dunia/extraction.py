@@ -66,14 +66,16 @@ if TYPE_CHECKING:
 )
 async def visit_link(
     page: Page,
-    product_href: str,
+    url: str,
+    *,
+    timeout: int | None = None,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
 ) -> None:
     """
     Visit the page (url) and retry for 5 times if the navigation has been failed within the configured timeout
     """
     try:
-        await page.goto(product_href, wait_until=wait_until)
+        await page.goto(url, timeout=timeout, wait_until=wait_until)
     except (PlaywrightTimeoutError, PlaywrightError) as err:
         raise TimeoutException(err) from err
 
