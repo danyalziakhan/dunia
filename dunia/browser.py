@@ -31,17 +31,11 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Protocol, TypedDict
-
-from dunia.page import Page
+from typing import TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
-
     from typing import Final, Literal
 
-    from typing_extensions import Self
-
-    from dunia.request import Request
 
 SCRIPT_PATH: Final[Path] = Path().absolute()
 CACHE_DIR: Final[str] = os.path.join(SCRIPT_PATH, "cache")
@@ -136,30 +130,3 @@ class BrowserConfig:
         default=None,
         metadata={"help": "Proxy server configuration"},
     )
-
-
-class Browser(Protocol):
-    async def new_page(self) -> Page:
-        """This is present here so that new_page() for its sub-classes will work regardless of the type of Browser"""
-        ...
-
-    @property
-    def pages(self) -> list[Page]:
-        ...
-
-    @property
-    def request(self) -> Request:
-        """Returns the Request object for HTTP methods"""
-        ...
-
-
-class BrowserWithLogin(Browser, Protocol):
-    async def login(self) -> Self:
-        """Returns the self to enable fluent interface programming"""
-        ...
-
-
-class BrowserWithoutLogin(Browser, Protocol):
-    async def create(self) -> Self:
-        """Returns the self to enable fluent interface programming"""
-        ...

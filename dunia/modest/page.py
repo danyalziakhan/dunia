@@ -29,7 +29,8 @@ from typing import TYPE_CHECKING
 from dunia.modest._core import css, css_first
 
 if TYPE_CHECKING:
-    from selectolax.parser import HTMLParser, Node
+    from selectolax.parser import HTMLParser as ModestHTMLParser
+    from selectolax.parser import Node as ModestNode
     from typing_extensions import Self
 
     from dunia.element import Element
@@ -37,7 +38,7 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True)
 class ModestDocument:
-    handle: HTMLParser
+    handle: ModestHTMLParser
 
     async def query_selector(self, selector: str) -> Element | None:
         if handle := await css_first(self.handle, selector):
@@ -75,7 +76,7 @@ class ModestDocument:
 
 @dataclass(slots=True, frozen=True)
 class ModestElement:
-    handle: Node
+    handle: ModestNode
 
     async def query_selector(self, selector: str) -> Self | None:
         if handle := await css_first(self.handle, selector):

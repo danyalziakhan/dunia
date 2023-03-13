@@ -42,44 +42,5 @@ class Element(Protocol):
         ...
 
 
-class Node(Element, Protocol):
-    async def click(self, *, timeout: int | None = None) -> None:
-        ...
-
-    async def select_option(
-        self,
-        value: str | list[str] | None = None,
-        *,
-        label: str | list[str] | None = None,
-        timeout: int | None = None,
-    ) -> list[str]:
-        ...
-
-    async def scroll_into_view_if_needed(self, *, timeout: int | None = None) -> None:
-        ...
-
-    async def focus(self) -> None:
-        ...
-
-    async def is_visible(self) -> bool:
-        ...
-
-    async def is_enabled(self) -> bool:
-        ...
-
-    async def fill(self, value: str, *, timeout: int | None = None) -> None:
-        ...
-
-    async def type(self, text: str, *, timeout: int | None = None) -> None:
-        ...
-
-    async def press(self, key: str, *, timeout: int | None = None) -> None:
-        ...
-
-    async def inner_html(self) -> str:
-        ...
-
-
 # ? Aliases
 Fragment = Element
-ElementHandle = Node

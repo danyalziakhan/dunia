@@ -33,16 +33,17 @@ from dunia.error import (
 from dunia.log import success
 
 if TYPE_CHECKING:
-    from dunia.browser import Browser
-    from dunia.page import Page
+    from dunia.playwright._types import PlaywrightBrowser, PlaywrightPage
 
 
 class LoginStrategy(Protocol):
-    async def __call__(self, page: Page, login_button_query: str) -> None:
+    async def __call__(self, page: PlaywrightPage, login_button_query: str) -> None:
         ...
 
 
-async def default_login_button_strategy(page: Page, login_button_query: str) -> None:
+async def default_login_button_strategy(
+    page: PlaywrightPage, login_button_query: str
+) -> None:
     # ? Most markets redirect from login page when submitting the form, so we are putting it inside expect_navigation() block
     # ? If it doesn't work for some markets, then remove expect_navigation() and put the code outside it
     async with page.expect_navigation():
@@ -96,7 +97,7 @@ class LoginInfo:
 class Login:
     login_info: LoginInfo
 
-    async def __call__(self, browser: Browser) -> None:
+    async def __call__(self, browser: PlaywrightBrowser) -> None:
         page = await browser.new_page()
         # ? Sometimes if there are network requests happening in the background, the "input" fields keep reverting to the original/previous state while typing
         await page.goto(self.login_info.login_url, wait_until="networkidle")

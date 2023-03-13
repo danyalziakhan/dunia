@@ -23,18 +23,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol, cast
+from typing import TYPE_CHECKING
 
 import playwright.async_api as playwright
 
-from dunia.browser import Browser
 from dunia.error import BrowserNotInitialized
 from dunia.log import info
 from dunia.login import Login
-from dunia.playwright.page import PlaywrightPage
-from dunia.request import Request
-
-from ..page import Page
+from dunia.playwright._types import PlaywrightBrowser, PlaywrightPage
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -43,76 +39,15 @@ if TYPE_CHECKING:
     from dunia.login import LoginInfo
 
 
-class PlaywrightBrowser(Browser, Protocol):
-    async def new_page(self) -> PlaywrightPage:
-        ...
-
-    @property
-    def context(self) -> playwright.BrowserContext:
-        ...
-
-    @property
-    def pages(self) -> list[Page]:
-        ...
-
-
 @dataclass(slots=True, kw_only=True)
-class PlaywrightPersistentBrowser:
+class AsyncPlaywrightBrowser(PlaywrightBrowser):
     """
     This class contains all the possible data/state required for initialization of Playwright browser (Chrome)
     """
 
     browser_config: BrowserConfig
     playwright: playwright.Playwright
-
-
-@dataclass(slots=True, kw_only=True)
-class PlaywrightBrowserWithLogin(PlaywrightPersistentBrowser):
-    """
-    Use this class when the market requires login for crawling the information
-    """
-
-    login_info: LoginInfo
-    __browser_context: playwright.BrowserContext | None = field(
-        default=None,
-        init=False,
-        repr=False,
-    )
-
-    async def login(self) -> PlaywrightBrowser:
-        login = Login(self.login_info)
-        self.__browser_context = await create_playwright_persistent_browser(self)
-        await login(self)
-        return self
-
-    # ? We only need new_page() from playwright's BrowserContext to make this class API compatible with all the existing markets because we can then simply use PlaywrightBrowser instead of playwright's BrowserContext
-    async def new_page(self) -> Page:
-        if not self.__browser_context:
-            raise BrowserNotInitialized("Please call login() first")
-
-        return PlaywrightPage(await self.context.new_page())
-
-    @property
-    def context(self) -> playwright.BrowserContext:
-        if not self.__browser_context:
-            raise BrowserNotInitialized("Please call login() first")
-
-        return self.__browser_context
-
-    @property
-    def request(self) -> Request:
-        return cast(Request, self.context.request)
-
-    @property
-    def pages(self) -> list[Page]:
-        return [PlaywrightPage(page) for page in self.context.pages]
-
-
-@dataclass(slots=True, kw_only=True)
-class PlaywrightBrowserWithoutLogin(PlaywrightPersistentBrowser):
-    """
-    Use this class when the market doesn't require a login for crawling the information
-    """
+    login_info: LoginInfo | None = None
 
     __browser_context: playwright.BrowserContext | None = field(
         default=None,
@@ -122,40 +57,30 @@ class PlaywrightBrowserWithoutLogin(PlaywrightPersistentBrowser):
 
     async def create(self) -> PlaywrightBrowser:
         self.__browser_context = await create_playwright_persistent_browser(self)
+        self._impl_obj = self.__browser_context
+
+        if self.login_info:
+            login = Login(self.login_info)
+            await login(self)
+
         return self
 
-    # ? We only need new_page() from playwright's BrowserContext to make this class API compatible with all the existing markets because we can then simply use PlaywrightBrowser instead of playwright's BrowserContext
-    async def new_page(self) -> Page:
+    async def new_page(self) -> PlaywrightPage:
         if not self.__browser_context:
             raise BrowserNotInitialized("Please call create() first")
 
-        return PlaywrightPage(await self.__browser_context.new_page())
-
-    @property
-    def context(self) -> playwright.BrowserContext:
-        if not self.__browser_context:
-            raise BrowserNotInitialized("Please call create() first")
-
-        return self.__browser_context
-
-    @property
-    def request(self) -> Request:
-        return cast(Request, self.context.request)
-
-    @property
-    def pages(self) -> list[Page]:
-        return [PlaywrightPage(page) for page in self.context.pages]
+        return await self.__browser_context.new_page()
 
 
 async def create_playwright_persistent_browser(
-    persistent_browser: PlaywrightPersistentBrowser,
+    browser: AsyncPlaywrightBrowser,
 ) -> playwright.BrowserContext:
     """
     This creates the browser that saves the cache of visited pages in cache directory configured in BrowserConfig
     """
-    if persistent_browser.browser_config.user_data_dir:
+    if browser.browser_config.user_data_dir:
         info(
-            f"Browser cache directory: <blue>{persistent_browser.browser_config.user_data_dir}</>"
+            f"Browser cache directory: <blue>{browser.browser_config.user_data_dir}</>"
         )
     browser_args: dict[
         str,
@@ -167,50 +92,35 @@ async def create_playwright_persistent_browser(
         | playwright.ViewportSize
         | playwright.ProxySettings,
     ] = dict(
-        user_data_dir=persistent_browser.browser_config.user_data_dir,
-        headless=persistent_browser.browser_config.headless,
-        channel=persistent_browser.browser_config.channel,
-        locale=persistent_browser.browser_config.locale,
-        accept_downloads=persistent_browser.browser_config.accept_downloads,
-        devtools=persistent_browser.browser_config.devtools,
+        user_data_dir=browser.browser_config.user_data_dir,
+        headless=browser.browser_config.headless,
+        channel=browser.browser_config.channel,
+        locale=browser.browser_config.locale,
+        accept_downloads=browser.browser_config.accept_downloads,
+        devtools=browser.browser_config.devtools,
     )
 
-    if persistent_browser.browser_config.slow_mo:
-        browser_args["slow_mo"] = persistent_browser.browser_config.slow_mo
+    if browser.browser_config.slow_mo:
+        browser_args["slow_mo"] = browser.browser_config.slow_mo
 
-    if persistent_browser.browser_config.viewport:
-        browser_args["viewport"] = persistent_browser.browser_config.viewport
+    if browser.browser_config.viewport:
+        browser_args["viewport"] = browser.browser_config.viewport
     else:
         browser_args["no_viewport"] = True
 
-    if persistent_browser.browser_config.proxy:
-        browser_args["proxy"] = persistent_browser.browser_config.proxy
+    if browser.browser_config.proxy:
+        browser_args["proxy"] = browser.browser_config.proxy
 
     browser_args["ignore_https_errors"] = True
 
-    if persistent_browser.browser_config.browser == "chromium":
-        browser = await persistent_browser.playwright.chromium.launch_persistent_context(**browser_args)  # type: ignore
+    if browser.browser_config.browser == "chromium":
+        persistent_browser = await browser.playwright.chromium.launch_persistent_context(**browser_args)  # type: ignore
     else:
-        browser = await persistent_browser.playwright.firefox.launch_persistent_context(**browser_args)  # type: ignore
+        persistent_browser = await browser.playwright.firefox.launch_persistent_context(**browser_args)  # type: ignore
 
-    browser.set_default_navigation_timeout(
-        persistent_browser.browser_config.default_navigation_timeout
+    persistent_browser.set_default_navigation_timeout(
+        browser.browser_config.default_navigation_timeout
     )
-    browser.set_default_timeout(persistent_browser.browser_config.default_timeout)
+    persistent_browser.set_default_timeout(browser.browser_config.default_timeout)
 
-    return browser
-
-
-async def close_first_blank_page(browser: PlaywrightBrowser):
-    if len(browser.context.pages) > 1 and "about:blank" in browser.context.pages[0].url:
-        await browser.context.pages[0].close()
-
-
-async def main_page_only(browser: PlaywrightBrowser) -> Page:
-    new_page = await browser.new_page()
-    all_pages = browser.context.pages
-    if len(all_pages) > 1:
-        for page in all_pages[:-1]:
-            await page.close()
-
-    return new_page
+    return persistent_browser

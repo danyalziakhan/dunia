@@ -36,6 +36,7 @@ from selectolax.parser import HTMLParser
 from throttler import throttle
 
 from dunia.aio import with_timeout
+from dunia.document import Document
 from dunia.error import (
     HTMLParsingError,
     PlaywrightError,
@@ -47,14 +48,12 @@ from dunia.lexbor import LexborDocument
 from dunia.log import debug
 from dunia.lxml import LXMLDocument
 from dunia.modest import ModestDocument
-from dunia.page import Document
 
 if TYPE_CHECKING:
     from typing import Literal
 
-    from dunia.browser import Browser
     from dunia.html import HTML
-    from dunia.page import Page
+    from dunia.playwright._types import PlaywrightBrowser, PlaywrightPage
 
 
 # ? Sometimes websites are throwing JavaScript exceptions in devtools console, which makes the page stuck on "networkidle", so let's make "load" by default for now
@@ -65,7 +64,7 @@ if TYPE_CHECKING:
     on_backoff=backoff_hdlr,  # type: ignore
 )
 async def visit_link(
-    page: Page,
+    page: PlaywrightPage,
     url: str,
     *,
     timeout: int | None = None,
@@ -91,7 +90,7 @@ async def load_html(
 
 async def load_content(
     *,
-    browser: Browser,
+    browser: PlaywrightBrowser,
     url: str,
     html: HTML,
     rate_limit: int = 10,
@@ -156,7 +155,7 @@ async def load_content(
 
 async def reload_content(
     *,
-    browser: Browser,
+    browser: PlaywrightBrowser,
     url: str,
     html: HTML,
     rate_limit: int = 10,
@@ -207,7 +206,7 @@ async def reload_content(
     on_backoff=backoff_hdlr,  # type: ignore
 )
 async def fetch_content(
-    browser: Browser, url: str, rate_limit: int, encoding: str | None = None
+    browser: PlaywrightBrowser, url: str, rate_limit: int, encoding: str | None = None
 ) -> str:
     """
     Use the Browser to send HTTP's GET request and receive the content response
@@ -263,14 +262,14 @@ async def detect_encoding(content: bytes) -> str:
 
 async def load_page(
     *,
-    browser: Browser,
+    browser: PlaywrightBrowser,
     url: str,
     html: HTML,
     rate_limit: int = 10,
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-) -> Page:
+) -> PlaywrightPage:
     """
     Create a new page in the browser and visit the URL
 
@@ -304,14 +303,14 @@ async def load_page(
 
 async def reload_page(
     *,
-    browser: Browser,
+    browser: PlaywrightBrowser,
     url: str,
     html: HTML,
     rate_limit: int = 10,
     async_timeout: int = 600,
     save_html: bool = True,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-) -> Page:
+) -> PlaywrightPage:
     """
     Create a new page in the browser
 
@@ -375,7 +374,7 @@ async def parse_document(
 
 
 async def parse_document_from_url(
-    browser: Browser,
+    browser: PlaywrightBrowser,
     url: str,
     *,
     rate_limit: int = 10,
