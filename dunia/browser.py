@@ -87,7 +87,7 @@ class BrowserConfig:
     accept_downloads: bool = field(
         default=True,
         metadata={
-            "help": "Whether to accept the downloads. This must be set to true in markets where downloading is done by the browser/driver"
+            "help": "Whether to accept the downloads. This must be set to true in websites where downloading is done by the browser/driver"
         },
     )
     viewport: ViewportSize | None = field(

@@ -44,20 +44,20 @@ class LoginStrategy(Protocol):
 async def default_login_button_strategy(
     page: PlaywrightPage, login_button_query: str
 ) -> None:
-    # ? Most markets redirect from login page when submitting the form, so we are putting it inside expect_navigation() block
-    # ? If it doesn't work for some markets, then remove expect_navigation() and put the code outside it
+    # ? Most websites redirect from login page when submitting the form, so we are putting it inside expect_navigation() block
+    # ? If it doesn't work for some websites, copy this function to your code, remove expect_navigation() part and pass your function to LoginInfo object
     async with page.expect_navigation():
         await page.click(login_button_query)
 
     await page.wait_for_load_state(
         state="load"
-    )  # ? "load" is fine for most markets, but some markets don't show full page details until all the network requests are resolved, so for that "networkidle" will be used
+    )  # ? "load" is fine for most websites, but some websites don't show full page details until all the network requests are resolved, so for that "networkidle" can be used
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class LoginInfo:
     """
-    All the required information that will allow the browser to login to the market website that is going to be crawled. This doesn't contain any information about the type of Browser.
+    All the required information that will allow the browser to login to the website. This doesn't contain any information about the type of Browser.
     """
 
     login_url: str = field(
@@ -80,13 +80,13 @@ class LoginInfo:
         default=None,
         metadata={
             "help": "Query for the checkbox for keeping the user logged in."
-            "Some markets have the checkbox, in such case, it's better to use it to perhaps help the browser store the cache of user credentials"
+            "Some websites have the checkbox, in such case, it's better to use it to perhaps help the browser store the cache of user credentials"
         },
     )
     login_button_strategy: LoginStrategy = field(
         default=default_login_button_strategy,
         metadata={
-            "help": "Most markets provides the clickable submit button, but sometimes the button cannot be clicked."
+            "help": "Most websites provides the clickable submit button, but sometimes the button cannot be clicked."
             'In such case, a different strategy for submitting the credentials will be used (such as pressing "Enter", etc.)'
             'In that case, we can say that it doesn\'t necessarily needs to be login "button" strategy, but anything that can successfully submit the form'
         },

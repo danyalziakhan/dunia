@@ -53,5 +53,7 @@ class HTMLFile(Protocol):
         ...
 
 
+# ? You have to provide your own implementation of the html file saving by implementing the methods
+# ? That way you can use your class in methods present in extraction.py
 class HTML(HTMLSaver, HTMLLoader, HTMLFile, Protocol):
     pass
