@@ -9,6 +9,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
@@ -19,24 +20,24 @@ readme = "README.md"
 version = "0.1.5"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-async-lru = "^2.0.2"
-async-timeout = "^4.0.2"
+python = ">=3.10,<3.13"
+async-lru = "^2.0.4"
+async-timeout = "^4.0.3"
 backoff = "^2.2.1"
-charset-normalizer = "^3.1.0"
+charset-normalizer = "^3.3.2"
 cssselect = "^1.2.0"
-loguru = "^0.6.0"
-playwright = "^1.31.1"
-selectolax = "^0.3.12"
+loguru = "^0.7.2"
+playwright = "^1.44.0"
+selectolax = "^0.3.21"
 throttler = "^1.2.2"
-lxml = "^4.9.2"
+lxml = "^5.2.2"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0"
-ipykernel = "^6.21.3"
-ipython = "^8.11.0"
-isort = "^5.12.0"
-pre-commit = "^3.1.1"
+black = "^24.4.2"
+ipykernel = "^6.29.4"
+ipython = "^8.24.0"
+isort = "^5.13.2"
+pre-commit = "^3.7.1"
 
 [tool.black]
 include = '\.py$'

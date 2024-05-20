@@ -23,8 +23,6 @@
 from __future__ import annotations
 
 import asyncio
-import os
-from contextlib import suppress
 from typing import TYPE_CHECKING, Any, cast
 
 import backoff
@@ -93,11 +91,10 @@ async def load_content(
     browser: PlaywrightBrowser,
     url: str,
     html: HTML,
-    rate_limit: int = 10,
-    async_timeout: int = 600,
-    save_html: bool = True,
+    on_failure: Literal["fetch", "visit", "fetch_first", "visit_first"] | None = None,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-    strict: bool = False,
+    async_timeout: int = 600,
+    rate_limit: int = 10,
 ) -> str:
     """
     Load HTML content
@@ -106,95 +103,64 @@ async def load_content(
 
     If the request fails and 'strict' is False, then visit the URL
     """
-    if save_html:
-        if await html.exists():
-            debug(f"Loading content from existing HTML: {html.file}")
-            content = await html.load()
-        else:
+
+    if await html.exists():
+        debug(f"Loading content from existing HTML: {html.file}")
+        content = await html.load()
+
+    match on_failure:
+        case None:
+            raise FileNotFoundError("HTML content is not present on disk")
+        case "fetch" | "fetch_first":
             try:
-                debug(f"Fetching content from URL: {url}")
+                debug(
+                    f"HTML content is not present on disk. Fetching content from URL: {url}"
+                )
                 content = await fetch_content(browser, url, rate_limit)
             except UnicodeDecodeError as err:
-                if strict:
+                if on_failure == "fetch":
                     raise err from err
 
+                # ? In the case of "fetch_first"
                 debug(
-                    f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
+                    f"Fetching failed due to an error ({err}). Visiting the URL ({url}) ..."
                 )
-                visit = with_timeout(async_timeout)(  # type: ignore
-                    throttle(rate_limit=rate_limit, period=1.0)(  # type: ignore
-                        visit_link
+                try:
+                    visit_link_with_timeout = with_timeout(async_timeout)(  # type: ignore
+                        throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
                     )
+
+                    page = await browser.new_page()
+                    await visit_link_with_timeout(page, url, wait_until=wait_until)
+                    content = await page.content()
+                    await page.close()
+                except TimeoutException as err:
+                    raise err from err
+
+        case "visit" | "visit_first":
+            debug(f"HTML content is not present on disk. Visiting the URL ({url}) ...")
+
+            try:
+                visit_link_with_timeout = with_timeout(async_timeout)(  # type: ignore
+                    throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
                 )
+
                 page = await browser.new_page()
-                await visit(page, url, wait_until=wait_until)
+                await visit_link_with_timeout(page, url, wait_until=wait_until)
                 content = await page.content()
                 await page.close()
-            await html.save(content)
-    else:
-        try:
-            debug(f"Fetching content from URL: {url}")
-            content = await fetch_content(browser, url, rate_limit)
-        except UnicodeDecodeError as err:
-            if strict:
-                raise err from err
+            except TimeoutException as err:
+                if on_failure == "visit":
+                    raise err from err
 
-            debug(
-                f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
-            )
-            visit = with_timeout(async_timeout)(  # type: ignore
-                throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
-            )
-            page = await browser.new_page()
-            await visit(page, url, wait_until=wait_until)
-            content = await page.content()
-            await page.close()
-
-    return content
-
-
-async def reload_content(
-    *,
-    browser: PlaywrightBrowser,
-    url: str,
-    html: HTML,
-    rate_limit: int = 10,
-    async_timeout: int = 600,
-    save_html: bool = True,
-    wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-    strict: bool = False,
-) -> str:
-    """
-    Reload HTML content
-
-    Remove the file if it exists on disk and fetch it again with Browser using HTTP's GET request
-
-    If the request fails and 'strict' is False, then visit the URL
-    """
-    if save_html:
-        with suppress(OSError):
-            os.remove(html.file)
-
-    try:
-        debug(f"Fetching content from URL: {url}")
-        content = await fetch_content(browser, url, rate_limit)
-    except UnicodeDecodeError as err:
-        if strict:
-            raise err from err
-
-        debug(
-            f'Fetching fails due to an error -> "{err}", visiting the URL ({url}) ...'
-        )
-        visit = with_timeout(async_timeout)(  # type: ignore
-            throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
-        )
-        page = await browser.new_page()
-        await visit(page, url, wait_until=wait_until)
-        content = await page.content()
-        await page.close()
-
-    if save_html:
-        await html.save(content)
+                # ? In the case of "visit_first"
+                try:
+                    debug(
+                        f"Visiting failed due to an error ({err}). Fetching the URL ({url}) ..."
+                    )
+                    content = await fetch_content(browser, url, rate_limit)
+                except UnicodeDecodeError as err:
+                    raise err from err
 
     return content
 
@@ -265,71 +231,79 @@ async def load_page(
     browser: PlaywrightBrowser,
     url: str,
     html: HTML,
-    rate_limit: int = 10,
-    async_timeout: int = 600,
-    save_html: bool = True,
+    on_failure: Literal["fetch", "visit", "fetch_first", "visit_first"] | None = None,
     wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
+    async_timeout: int = 600,
+    rate_limit: int = 10,
 ) -> PlaywrightPage:
     """
     Create a new page in the browser and visit the URL
-
-    Save the HTML content of page in the file on disk
     """
-    if save_html:
-        if await html.exists():
-            debug(f"Loading content from existing HTML: {html.file}")
-            content = await html.load()
-            page = await browser.new_page()
-            await page.set_content(content, wait_until=wait_until)
-        else:
-            debug(f"Visiting the URL ({url}) ...")
-            visit = with_timeout(async_timeout)(  # type: ignore
-                throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
-            )
-            page = await browser.new_page()
-            await visit(page, url, wait_until=wait_until)
-            content = await page.content()
-            await html.save(content)
-    else:
-        debug(f"Visiting the URL ({url}) ...")
-        visit = with_timeout(async_timeout)(  # type: ignore
-            throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
-        )
+    if await html.exists():
+        debug(f"Loading content from existing HTML: {html.file}")
+        content = await html.load()
         page = await browser.new_page()
-        await visit(page, url, wait_until=wait_until)
+        await page.set_content(content, wait_until=wait_until)
 
-    return page
+    match on_failure:
+        case None:
+            raise FileNotFoundError("HTML content is not present on disk")
+        case "fetch" | "fetch_first":
+            try:
+                debug(
+                    f"HTML content is not present on disk. Fetching content from URL: {url}"
+                )
+                content = await fetch_content(browser, url, rate_limit)
+            except UnicodeDecodeError as err:
+                if on_failure == "fetch":
+                    raise err from err
 
+                # ? In the case of "fetch_first"
+                debug(
+                    f"Fetching failed due to an error ({err}). Visiting the URL ({url}) ..."
+                )
+                try:
+                    visit_link_with_timeout = with_timeout(async_timeout)(  # type: ignore
+                        throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
+                    )
 
-async def reload_page(
-    *,
-    browser: PlaywrightBrowser,
-    url: str,
-    html: HTML,
-    rate_limit: int = 10,
-    async_timeout: int = 600,
-    save_html: bool = True,
-    wait_until: Literal["commit", "domcontentloaded", "load", "networkidle"] = "load",
-) -> PlaywrightPage:
-    """
-    Create a new page in the browser
+                    page = await browser.new_page()
+                    await visit_link_with_timeout(page, url, wait_until=wait_until)
+                    content = await page.content()
+                    await page.set_content(content, wait_until=wait_until)
+                except TimeoutException as err:
+                    raise err from err
+            else:
+                page = await browser.new_page()
+                await page.set_content(content, wait_until=wait_until)
 
-    If the file exists on disk, then remove it and visit the URL again
-    """
-    if save_html:
-        with suppress(OSError):
-            os.remove(html.file)
+        case "visit" | "visit_first":
+            debug(f"HTML content is not present on disk. Visiting the URL ({url}) ...")
 
-    debug(f"Visiting the URL ({url}) ...")
-    visit = with_timeout(async_timeout)(  # type: ignore
-        throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
-    )
-    page = await browser.new_page()
-    await visit(page, url, wait_until=wait_until)
-    content = await page.content()
+            try:
+                visit_link_with_timeout = with_timeout(async_timeout)(  # type: ignore
+                    throttle(rate_limit=rate_limit, period=1.0)(visit_link)  # type: ignore
+                )
 
-    if save_html:
-        await html.save(content)
+                page = await browser.new_page()
+                await visit_link_with_timeout(page, url, wait_until=wait_until)
+                content = await page.content()
+                await page.set_content(content, wait_until=wait_until)
+            except TimeoutException as err:
+                if on_failure == "visit":
+                    raise err from err
+
+                # ? In the case of "visit_first"
+                try:
+                    debug(
+                        f"Visiting failed due to an error ({err}). Fetching the URL ({url}) ..."
+                    )
+                    content = await fetch_content(browser, url, rate_limit)
+                except UnicodeDecodeError as err:
+                    raise err from err
+                else:
+                    page = await browser.new_page()
+                    await page.set_content(content, wait_until=wait_until)
 
     return page
 
