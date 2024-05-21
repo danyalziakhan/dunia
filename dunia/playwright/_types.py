@@ -22,10 +22,8 @@
 
 from __future__ import annotations
 
-from typing import TypeAlias
-
 import playwright.async_api as playwright
 
-PlaywrightBrowser: TypeAlias = playwright.BrowserContext
-PlaywrightPage: TypeAlias = playwright.Page
-PlaywrightElementHandle: TypeAlias = playwright.ElementHandle
+PlaywrightBrowser = playwright.BrowserContext
+PlaywrightPage = playwright.Page
+PlaywrightElementHandle = playwright.ElementHandle

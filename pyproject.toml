@@ -42,7 +42,7 @@ pre-commit = "^3.7.1"
 [tool.black]
 include = '\.py$'
 line-length = 88
-target_version = ['py310']
+target-version = ['py312']
 
 [tool.isort]
 float_to_top = true

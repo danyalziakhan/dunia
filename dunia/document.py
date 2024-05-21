@@ -22,39 +22,31 @@
 
 from __future__ import annotations
 
-from typing import Protocol, TypeVar, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from dunia.element import Element
 
-_SelectorType = TypeVar("_SelectorType")
-_T = TypeVar("_T")
-
 
 class QuerySelector(
-    Protocol[_SelectorType],
+    Protocol,
 ):
     async def text_content(
         self, selector: str, *, timeout: int | None = None
-    ) -> str | None:
-        ...
+    ) -> str | None: ...
 
     async def inner_text(
         self, selector: str, *, timeout: int | None = None
-    ) -> str | None:
-        ...
+    ) -> str | None: ...
 
     async def get_attribute(
         self, selector: str, name: str, *, timeout: int | None = None
-    ) -> str | None:
-        ...
+    ) -> str | None: ...
 
-    async def query_selector(self, selector: str) -> _SelectorType | None:
-        ...
+    async def query_selector(self, selector: str) -> Element | None: ...
 
-    async def query_selector_all(self, selector: str) -> list[_SelectorType]:
-        ...
+    async def query_selector_all(self, selector: str) -> list[Element]: ...
 
 
 @runtime_checkable
-class Document(QuerySelector[Element], Protocol):
+class Document(QuerySelector, Protocol):
     pass
