@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2022 Danyal Zia Khan
+# Copyright (c) 2022-2025 Danyal Zia Khan
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -320,7 +320,9 @@ async def parse_document(
     """
     if engine == "lxml":
         try:
-            tree = cast(lxml.HtmlElement, await asyncio.to_thread(lxml.fromstring, content))  # type: ignore
+            tree = cast(
+                lxml.HtmlElement, await asyncio.to_thread(lxml.fromstring, content)
+            )  # type: ignore
         except lxml.etree.ParserError:
             return None
 

@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2022 Danyal Zia Khan
+# Copyright (c) 2022-2025 Danyal Zia Khan
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -114,9 +114,13 @@ async def create_playwright_persistent_browser(
     browser_args["ignore_https_errors"] = True
 
     if browser.browser_config.browser == "chromium":
-        persistent_browser = await browser.playwright.chromium.launch_persistent_context(**browser_args)  # type: ignore
+        persistent_browser = (
+            await browser.playwright.chromium.launch_persistent_context(**browser_args)
+        )  # type: ignore
     else:
-        persistent_browser = await browser.playwright.firefox.launch_persistent_context(**browser_args)  # type: ignore
+        persistent_browser = await browser.playwright.firefox.launch_persistent_context(
+            **browser_args
+        )  # type: ignore
 
     persistent_browser.set_default_navigation_timeout(
         browser.browser_config.default_navigation_timeout

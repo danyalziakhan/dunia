@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2022 Danyal Zia Khan
+# Copyright (c) 2022-2025 Danyal Zia Khan
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,15 @@ async def css_first(document_or_node: LexborHTMLParser | LexborNode, selector: s
     if (splitter := ",") in selector or (splitter := ", ") in selector:
         for selector in selector.split(splitter):
             if handle := await asyncio.to_thread(
-                document_or_node.css_first, selector, default=None  # type: ignore
+                document_or_node.css_first,
+                selector,
+                default=None,  # type: ignore
             ):
                 return handle
     elif handle := await asyncio.to_thread(
-        document_or_node.css_first, selector, default=None  # type: ignore
+        document_or_node.css_first,
+        selector,
+        default=None,  # type: ignore
     ):
         return handle
 
