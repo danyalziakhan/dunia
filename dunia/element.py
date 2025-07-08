@@ -25,21 +25,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class Element(Protocol):
-    async def query_selector(self, selector: str) -> Self | None:
-        ...
+    async def query_selector(self, selector: str) -> Self | None: ...
 
-    async def query_selector_all(self, selector: str) -> list[Self]:
-        ...
+    async def query_selector_all(self, selector: str) -> list[Self]: ...
 
-    async def text_content(self) -> str | None:
-        ...
+    async def text_content(self) -> str | None: ...
 
-    async def get_attribute(self, name: str) -> str | None:
-        ...
+    async def get_attribute(self, name: str) -> str | None: ...
 
 
 # ? Aliases

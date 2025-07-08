@@ -37,8 +37,7 @@ if TYPE_CHECKING:
 
 
 class LoginStrategy(Protocol):
-    async def __call__(self, page: PlaywrightPage, login_button_query: str) -> None:
-        ...
+    async def __call__(self, page: PlaywrightPage, login_button_query: str) -> None: ...
 
 
 async def default_login_button_strategy(

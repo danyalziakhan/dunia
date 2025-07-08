@@ -29,8 +29,9 @@ from typing import TYPE_CHECKING
 from dunia.lxml._core import cssselect, get_attribute, inner_text, text_content
 
 if TYPE_CHECKING:
+    from typing import Self
+
     import lxml.html as lxml
-    from typing_extensions import Self
 
     from dunia.element import Element
 

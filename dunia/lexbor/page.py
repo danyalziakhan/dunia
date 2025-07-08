@@ -29,8 +29,9 @@ from typing import TYPE_CHECKING
 from dunia.lexbor._core import css, css_first
 
 if TYPE_CHECKING:
+    from typing import Self
+
     from selectolax.lexbor import LexborHTMLParser, LexborNode
-    from typing_extensions import Self
 
     from dunia.element import Element
 

@@ -29,9 +29,10 @@ from typing import TYPE_CHECKING
 from dunia.modest._core import css, css_first
 
 if TYPE_CHECKING:
+    from typing import Self
+
     from selectolax.parser import HTMLParser as ModestHTMLParser
     from selectolax.parser import Node as ModestNode
-    from typing_extensions import Self
 
     from dunia.element import Element
 

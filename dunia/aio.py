@@ -63,8 +63,7 @@ if TYPE_CHECKING:
     @overload
     def gather(  # type: ignore
         __coro_or_future1: _FutureT[_T1], *, return_exceptions: Literal[False] = ...
-    ) -> Future[tuple[_T1]]:
-        ...
+    ) -> Future[tuple[_T1]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -72,8 +71,7 @@ if TYPE_CHECKING:
         __coro_or_future2: _FutureT[_T2],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2]]:
-        ...
+    ) -> Future[tuple[_T1, _T2]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -82,8 +80,7 @@ if TYPE_CHECKING:
         __coro_or_future3: _FutureT[_T3],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3]]:
-        ...
+    ) -> Future[tuple[_T1, _T2, _T3]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -93,8 +90,7 @@ if TYPE_CHECKING:
         __coro_or_future4: _FutureT[_T4],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3, _T4]]:
-        ...
+    ) -> Future[tuple[_T1, _T2, _T3, _T4]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -105,8 +101,7 @@ if TYPE_CHECKING:
         __coro_or_future5: _FutureT[_T5],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5]]:
-        ...
+    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -118,8 +113,7 @@ if TYPE_CHECKING:
         __coro_or_future6: _FutureT[_T6],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6]]:
-        ...
+    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -132,8 +126,7 @@ if TYPE_CHECKING:
         __coro_or_future7: _FutureT[_T7],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7]]:
-        ...
+    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -147,8 +140,7 @@ if TYPE_CHECKING:
         __coro_or_future8: _FutureT[_T8],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8]]:
-        ...
+    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -163,8 +155,7 @@ if TYPE_CHECKING:
         __coro_or_future9: _FutureT[_T9],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9]]:
-        ...
+    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -180,8 +171,7 @@ if TYPE_CHECKING:
         __coro_or_future10: _FutureT[_T10],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10]]:
-        ...
+    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -198,8 +188,7 @@ if TYPE_CHECKING:
         __coro_or_future11: _FutureT[_T11],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11]]:
-        ...
+    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11]]: ...
 
     @overload
     def gather(  # type: ignore
@@ -217,8 +206,9 @@ if TYPE_CHECKING:
         __coro_or_future12: _FutureT[_T12],
         *,
         return_exceptions: Literal[False] = ...,
-    ) -> Future[tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12]]:
-        ...
+    ) -> Future[
+        tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12]
+    ]: ...
 
     @overload
     def gather(  # type: ignore
@@ -239,8 +229,7 @@ if TYPE_CHECKING:
         return_exceptions: Literal[False] = ...,
     ) -> Future[
         tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(  # type: ignore
@@ -262,8 +251,7 @@ if TYPE_CHECKING:
         return_exceptions: Literal[False] = ...,
     ) -> Future[
         tuple[_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10, _T11, _T12, _T13, _T14]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(  # type: ignore
@@ -302,8 +290,7 @@ if TYPE_CHECKING:
             _T14,
             _T15,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(  # type: ignore
@@ -344,8 +331,7 @@ if TYPE_CHECKING:
             _T15,
             _T16,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(  # type: ignore
@@ -388,8 +374,7 @@ if TYPE_CHECKING:
             _T16,
             _T17,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(  # type: ignore
@@ -434,8 +419,7 @@ if TYPE_CHECKING:
             _T17,
             _T18,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -460,14 +444,12 @@ if TYPE_CHECKING:
         __coro_or_future19: _FutureT[Any],
         *coros_or_futures: _FutureT[Any],
         return_exceptions: bool = ...,
-    ) -> Future[list[Any]]:
-        ...
+    ) -> Future[list[Any]]: ...
 
     @overload
     def gather(
         __coro_or_future1: _FutureT[_T1], *, return_exceptions: bool = ...
-    ) -> Future[tuple[_T1 | BaseException]]:
-        ...
+    ) -> Future[tuple[_T1 | BaseException]]: ...
 
     @overload
     def gather(
@@ -475,8 +457,7 @@ if TYPE_CHECKING:
         __coro_or_future2: _FutureT[_T2],
         *,
         return_exceptions: bool = ...,
-    ) -> Future[tuple[_T1 | BaseException, _T2 | BaseException]]:
-        ...
+    ) -> Future[tuple[_T1 | BaseException, _T2 | BaseException]]: ...
 
     @overload
     def gather(
@@ -485,8 +466,9 @@ if TYPE_CHECKING:
         __coro_or_future3: _FutureT[_T3],
         *,
         return_exceptions: bool = ...,
-    ) -> Future[tuple[_T1 | BaseException, _T2 | BaseException, _T3 | BaseException]]:
-        ...
+    ) -> Future[
+        tuple[_T1 | BaseException, _T2 | BaseException, _T3 | BaseException]
+    ]: ...
 
     @overload
     def gather(
@@ -503,8 +485,7 @@ if TYPE_CHECKING:
             _T3 | BaseException,
             _T4 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -523,8 +504,7 @@ if TYPE_CHECKING:
             _T4 | BaseException,
             _T5 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -545,8 +525,7 @@ if TYPE_CHECKING:
             _T5 | BaseException,
             _T6 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -569,8 +548,7 @@ if TYPE_CHECKING:
             _T6 | BaseException,
             _T7 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -595,8 +573,7 @@ if TYPE_CHECKING:
             _T7 | BaseException,
             _T8 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -623,8 +600,7 @@ if TYPE_CHECKING:
             _T8 | BaseException,
             _T9 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -653,8 +629,7 @@ if TYPE_CHECKING:
             _T9 | BaseException,
             _T10 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -685,8 +660,7 @@ if TYPE_CHECKING:
             _T10 | BaseException,
             _T11 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -719,8 +693,7 @@ if TYPE_CHECKING:
             _T11 | BaseException,
             _T12 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -755,8 +728,7 @@ if TYPE_CHECKING:
             _T12 | BaseException,
             _T13 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -793,8 +765,7 @@ if TYPE_CHECKING:
             _T13 | BaseException,
             _T14 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -833,8 +804,7 @@ if TYPE_CHECKING:
             _T14 | BaseException,
             _T15 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -875,8 +845,7 @@ if TYPE_CHECKING:
             _T15 | BaseException,
             _T16 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -919,8 +888,7 @@ if TYPE_CHECKING:
             _T16 | BaseException,
             _T17 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
     @overload
     def gather(
@@ -965,8 +933,7 @@ if TYPE_CHECKING:
             _T17 | BaseException,
             _T18 | BaseException,
         ]
-    ]:
-        ...
+    ]: ...
 
 
 async def gather(  # type: ignore
