@@ -945,7 +945,7 @@ async def gather(  # type: ignore
 
 def with_timeout(timeout: int):
     def decorator(
-        fn: Callable[ParamsType, Coroutine[Any, Any, ReturnType]]
+        fn: Callable[ParamsType, Coroutine[Any, Any, ReturnType]],
     ) -> Callable[ParamsType, Coroutine[Any, Any, ReturnType]]:
         @wraps(fn)
         async def wrapper(*args: ParamsType.args, **kwargs: ParamsType.kwargs):
