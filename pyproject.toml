@@ -2,7 +2,7 @@
 name = "dunia"
 version = "0.1.5"
 description = "HTML parsing of JavaScript heavy websites using multiple backends (lxml, modest, playwright, etc.)."
-authors = [{ name = "Danyal Zia Khan", email = "danyal6870@gmail.com" }]
+authors = [{ name = "Danyal Zia Khan", email = "danyalziakhan@gmail.com" }]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
 license = "MIT"
